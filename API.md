@@ -41,13 +41,27 @@ target_link_libraries(your_app PRIVATE labelprint)
 
 The library target `labelprint` is a static library. It automatically sets up include paths (`include/`) and links `gdiplus.lib` on MSVC. C++17 is required.
 
+### Pre-built release (no build needed)
+
+Download `labelprint-vX.Y.Z-windows-x64.zip` from [GitHub Releases](https://github.com/zemise/labelprint/releases).
+
+```
+# Include
+-Ilabelprint/include -Ilabelprint
+
+# Link
+labelprint.lib gdiplus.lib
+```
+
 ### Manual build
 
 ```bash
-cmake -S . -B out/build/x64-Release -G Ninja
-cmake --build out/build/x64-Release
-# Link: labelprint.lib + gdiplus.lib
-# Include: -I<root>/include -I<root>
+git clone https://github.com/zemise/labelprint.git
+cd labelprint
+cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release
+cmake --build build
+# Link: build/labelprint.lib + gdiplus.lib
+# Include: -Ilabelprint/include -Ilabelprint
 ```
 
 ### Header

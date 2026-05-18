@@ -1,0 +1,50 @@
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+
+jobs:
+  release:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure CMake (Release)
+        run: cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release
+
+      - name: Build
+        run: cmake --build build
+
+      - name: Run tests
+        run: ./build/test_runner.exe
+
+      - name: Package release artifact
+        shell: pwsh
+        run: |
+          $name = "labelprint-${{ github.ref_name }}-windows-x64"
+          New-Item -ItemType Directory -Path release/labelprint -Force
+          Copy-Item -Recurse include/labelprint/* release/labelprint/
+          Copy-Item build/labelprint.lib release/
+          Copy-Item API.md,README.md release/
+          Compress-Archive -Path release/* -DestinationPath "$name.zip"
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: "LabelPrint ${{ github.ref_name }}"
+          body: |
+            ## LabelPrint ${{ github.ref_name }}
+
+            Static library + headers for Windows x64.
+
+            ### Usage
+            ```
+            #include "labelprint/labelprint.h"
+            // Link: labelprint.lib + gdiplus.lib
+            ```
+
+            See [API.md](${{ github.server_url }}/${{ github.repository }}/blob/main/API.md) for full documentation.
+          files: labelprint-*.zip

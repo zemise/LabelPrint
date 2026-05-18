@@ -1,6 +1,8 @@
-# 020 barcode · v1.0.0
+# LabelPrint · v1.0.0
 
-This project generates and prints a small medical barcode label for an `Xprinter XP-360B`.
+![CI](https://github.com/zemise/labelprint/actions/workflows/ci.yml/badge.svg)
+
+C++ label printing library — printer-independent document model with ZPL/TSPL backends.
 
 ## Current status
 
@@ -54,6 +56,21 @@ zpl_label.h/cpp         — ZPL/TSPL command builder (internal engine)
 main.cpp                — Sample using LabelDocument + PrinterProfile + Backends
 CMakeLists.txt          — CMake build config
 ```
+
+## Creating a release
+
+```bash
+git tag v1.0.1
+git push origin v1.0.1
+```
+
+The [Release](.github/workflows/release.yml) workflow automatically:
+- Builds `labelprint.lib` (Release, Windows x64)
+- Runs the full test suite
+- Packages headers + library into a `.zip`
+- Creates a GitHub Release with the artifact
+
+---
 
 ## Using the library in other projects
 
