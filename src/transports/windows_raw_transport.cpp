@@ -7,23 +7,33 @@
 namespace labelprint {
 
 void WindowsRawTransport::send(const PrintJob& job, const PrinterConnection& conn) {
-    if (conn.name.empty()) {
+    if (conn.name.empty() && conn.wideName.empty()) {
         throw std::runtime_error("Printer name is required");
     }
 
     HANDLE hPrinter = nullptr;
-    if (!OpenPrinterA(const_cast<char*>(conn.name.c_str()),
-                       &hPrinter, nullptr)) {
+    if (!conn.wideName.empty()) {
+        if (!OpenPrinterW(const_cast<wchar_t*>(conn.wideName.c_str()), &hPrinter, nullptr)) {
+            throw std::runtime_error("Cannot open printer");
+        }
+    } else if (!OpenPrinterA(const_cast<char*>(conn.name.c_str()), &hPrinter, nullptr)) {
         throw std::runtime_error("Cannot open printer: " + conn.name);
     }
 
-    DOC_INFO_1A docInfo;
-    docInfo.pDocName  = const_cast<char*>("Label Print Job");
-    docInfo.pOutputFile = nullptr;
-    docInfo.pDatatype  = const_cast<char*>("RAW");
-
-    DWORD jobId = StartDocPrinterA(hPrinter, 1,
-                                    reinterpret_cast<LPBYTE>(&docInfo));
+    DWORD jobId = 0;
+    if (!conn.wideName.empty()) {
+        DOC_INFO_1W docInfo;
+        docInfo.pDocName = const_cast<wchar_t*>(L"Label Print Job");
+        docInfo.pOutputFile = nullptr;
+        docInfo.pDatatype = const_cast<wchar_t*>(L"RAW");
+        jobId = StartDocPrinterW(hPrinter, 1, reinterpret_cast<LPBYTE>(&docInfo));
+    } else {
+        DOC_INFO_1A docInfo;
+        docInfo.pDocName = const_cast<char*>("Label Print Job");
+        docInfo.pOutputFile = nullptr;
+        docInfo.pDatatype = const_cast<char*>("RAW");
+        jobId = StartDocPrinterA(hPrinter, 1, reinterpret_cast<LPBYTE>(&docInfo));
+    }
     if (jobId == 0) {
         ClosePrinter(hPrinter);
         throw std::runtime_error("StartDocPrinter failed");

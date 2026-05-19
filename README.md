@@ -1,4 +1,4 @@
-# LabelPrint · v1.1.0
+# LabelPrint · v1.2.0
 
 ![CI](https://github.com/zemise/labelprint/actions/workflows/ci.yml/badge.svg)
 
@@ -17,6 +17,7 @@ C++ label printing library — printer-independent document model with ZPL/TSPL 
 - **Phase 5 complete:** Template API (`MedicalLabelData` + `buildMedicalLabel`).
 - **Phase 6 complete:** Transport layer (`FileTransport`, `WindowsRawTransport`, `Tcp9100Transport`).
 - **Phase 7 complete:** Test infrastructure (`test_runner.exe`), 29 tests covering document model + backend output.
+- **Phase 8 complete:** High-level medical label print API (`printMedicalLabel`) that resolves printer model and backend internally.
 
 ## Project structure
 
@@ -32,8 +33,10 @@ include/labelprint/
   tspl_bitmap_backend.h — TsplBitmapBackend (Phase 4)
   transport.h           — IPrintTransport + all transports (Phase 6)
   template.h            — MedicalLabelData + buildMedicalLabel (Phase 5)
+  medical_label_print.h — printMedicalLabel high-level API (Phase 8)
 src/labelprint/
   printer_profile.cpp   — XP-360B and ZD888 profile factories
+  medical_label_print.cpp — printer detection, backend selection, RAW print
 src/templates/
   medical_label.cpp     — buildMedicalLabel() template implementation
 src/transports/
@@ -111,7 +114,7 @@ Unzip the release package, then point `CMAKE_PREFIX_PATH` at the package root:
 cmake_minimum_required(VERSION 3.15)
 project(your-app LANGUAGES CXX)
 
-find_package(LabelPrint CONFIG REQUIRED)
+find_package(LabelPrint 1.2 CONFIG REQUIRED)
 
 add_executable(your_app main.cpp)
 target_link_libraries(your_app PRIVATE LabelPrint::labelprint)
@@ -120,7 +123,7 @@ target_link_libraries(your_app PRIVATE LabelPrint::labelprint)
 Configure:
 
 ```powershell
-cmake -S . -B build -DCMAKE_PREFIX_PATH=C:\path\to\labelprint-v1.0.1-windows-x64-vs2026
+cmake -S . -B build -DCMAKE_PREFIX_PATH=C:\path\to\labelprint-v1.2.0-windows-x64-vs2026
 cmake --build build --config Release
 ```
 
@@ -146,11 +149,6 @@ Your C++ code:
 using namespace labelprint;
 
 int main() {
-    const auto& profile = PrinterProfiles::xprinter_xp360b();
-    LabelSettings cfg;
-    cfg.width  = 400;
-    cfg.height = 240;
-
     MedicalLabelData data;
     data.sampleNo     = "22";
     data.testItem     = u8"血常规";
@@ -160,14 +158,14 @@ int main() {
     data.patientId    = "202629988";
     data.timestamp    = "2026/5/15 9:24";
 
-    LabelDocument doc = buildMedicalLabel(data, cfg);
-    TsplBitmapBackend backend;
-    PrintJob job = backend.render(doc, profile);
-
-    WindowsRawTransport raw;
-    raw.send(job, PrinterConnection{"Xprinter XP-360B #2"});
+    MedicalLabelPrintOptions options;
+    options.model = MedicalLabelPrinterModel::Auto;
+    printMedicalLabel("Xprinter XP-360B #2", data, options);
 }
 ```
+
+`printMedicalLabel()` detects the Windows printer driver/name metadata and chooses the built-in XP-360B TSPL bitmap path or Zebra ZD888 ZPL path. If detection is inconclusive, it falls back to `options.fallbackModel`, which defaults to XP-360B for backward compatibility.
+On Windows, a `std::wstring` overload is also available so applications can pass non-ANSI printer names without converting them through the local code page.
 
 For printer- or template-specific layouts, pass `MedicalLabelLayout` instead of raw `LabelSettings`:
 
@@ -189,6 +187,8 @@ Stable public API:
 - `MedicalLabelData`
 - `LabelSettings`
 - `buildMedicalLabel`
+- `MedicalLabelPrintOptions`
+- `printMedicalLabel`
 - `TsplBitmapBackend`
 - `WindowsRawTransport`
 

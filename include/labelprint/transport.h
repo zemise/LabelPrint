@@ -13,6 +13,7 @@ namespace labelprint {
 struct PrinterConnection {
     std::string name;        // printer share name (Windows) or IP address
     int         port = 9100; // TCP port for network printers
+    std::wstring wideName;   // optional Windows printer name for non-ANSI names
 };
 
 // ---------------------------------------------------------------------------

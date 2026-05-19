@@ -19,5 +19,8 @@
 // Template API
 #include "labelprint/template.h"
 
+// High-level medical label printing API
+#include "labelprint/medical_label_print.h"
+
 // Transport layer
 #include "labelprint/transport.h"

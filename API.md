@@ -1,9 +1,12 @@
-# API Reference · v1.1.0
+# API Reference · v1.2.0
 
 ## Architecture
 
 ```
 MedicalLabelData          ← your business data
+       │
+       ▼
+printMedicalLabel()       ← high-level API: model detection + render + send
        │
        ▼
 buildMedicalLabel()       ← template (optional, or build LabelDocument by hand)
@@ -26,6 +29,8 @@ Four layers, each with one job:
 | Document | `document.h`, `elements.h` | Printer-independent label description |
 | Rendering | `backend.h` + backend headers | Converts document to printer commands |
 | Sending | `transport.h` | Delivers the rendered job |
+
+For application code that prints standard medical sample labels, prefer `printMedicalLabel()`. Use the lower layers only when you need custom documents, debug output files, or special transport behavior.
 
 ---
 
@@ -66,7 +71,7 @@ API.md
 Use it from CMake:
 
 ```cmake
-find_package(LabelPrint CONFIG REQUIRED)
+find_package(LabelPrint 1.2 CONFIG REQUIRED)
 target_link_libraries(your_app PRIVATE LabelPrint::labelprint)
 ```
 
@@ -78,6 +83,37 @@ cmake --build build --config Release
 ```
 
 The imported target provides the include path and Windows SDK link libraries.
+
+### High-level medical label printing
+
+```cpp
+#include "labelprint/labelprint.h"
+
+using namespace labelprint;
+
+MedicalLabelData data;
+data.sampleNo = "22";
+data.testItem = u8"血常规";
+data.barcodeValue = "008085125";
+data.patientName = u8"廖明";
+data.specimenType = u8"全血";
+data.patientId = "202629988";
+data.timestamp = "2026/5/15 9:24";
+
+MedicalLabelPrintOptions options;
+options.model = MedicalLabelPrinterModel::Auto;
+
+MedicalLabelPrintResult result =
+    printMedicalLabel("Xprinter XP-360B #2", data, options);
+```
+
+`MedicalLabelPrinterModel::Auto` reads Windows printer metadata such as driver, port, processor, comment, and display name. It automatically selects `Xprinter XP-360B` with `TsplBitmapBackend` or `Zebra ZD888` with `ZplBackend` when possible. If the printer cannot be identified, `fallbackModel` is used and defaults to `XprinterXp360b`.
+
+Windows applications can call the `std::wstring` overload when the printer name may contain Chinese or other non-ANSI characters:
+
+```cpp
+printMedicalLabel(L"条码打印机", data, options);
+```
 
 Manual usage is also supported:
 
@@ -580,6 +616,8 @@ These names are kept stable for consumers:
 - `MedicalLabelData`
 - `LabelSettings`
 - `buildMedicalLabel`
+- `MedicalLabelPrintOptions`
+- `printMedicalLabel`
 - `TsplBitmapBackend`
 - `WindowsRawTransport`
 
@@ -659,12 +697,12 @@ WindowsRawTransport().send(job, PrinterConnection{"Xprinter XP-360B #2"});
 
 // Compile-time version macros
 LABELPRINT_VERSION_MAJOR   // 1
-LABELPRINT_VERSION_MINOR   // 0
+LABELPRINT_VERSION_MINOR   // 2
 LABELPRINT_VERSION_PATCH   // 0
-LABELPRINT_VERSION_STRING  // "1.1.0"
+LABELPRINT_VERSION_STRING  // "1.2.0"
 ```
 
-The version also appears in CMake: `project(LabelPrint VERSION 1.1.0)`.
+The version also appears in CMake: `project(LabelPrint VERSION 1.2.0)`.
 
 ---
 
