@@ -4,6 +4,7 @@
 #include "labelprint/printer_profile.h"
 #include "labelprint/backend.h"
 #include "labelprint/template.h"
+#include "labelprint/transport.h"
 #include "labelprint/zpl_backend.h"
 #include "labelprint/tspl_backend.h"
 #include "labelprint/tspl_bitmap_backend.h"
@@ -130,6 +131,30 @@ ADD_TEST(tspl_bitmap_backend_registered) {
     TsplBitmapBackend backend;
 }
 
+ADD_TEST(stable_public_api_names_are_available) {
+    MedicalLabelData data;
+    data.sampleNo     = "22";
+    data.testItem     = "CBC";
+    data.barcodeValue = "123";
+    data.patientName  = "ABC";
+    data.specimenType = "BLOOD";
+    data.patientId    = "999";
+    data.timestamp    = "2026/1/1";
+
+    LabelSettings settings = testSettings();
+    LabelDocument doc = buildMedicalLabel(data, settings);
+
+    TsplBitmapBackend backend;
+    IPrinterBackend* backendApi = &backend;
+
+    WindowsRawTransport raw;
+    IPrintTransport* transportApi = &raw;
+
+    ASSERT_EQ(doc.settings().width, settings.width);
+    ASSERT(backendApi != nullptr);
+    ASSERT(transportApi != nullptr);
+}
+
 ADD_TEST(tspl_bitmap_ascii_text_uses_native) {
     MedicalLabelData data;
     data.sampleNo     = "22";
@@ -172,6 +197,66 @@ ADD_TEST(tspl_bitmap_cjk_text_uses_bitmap) {
     // CJK text should produce BITMAP annotations in debug text
     std::string debug = job.debugText;
     ASSERT(debug.find("(BITMAP") != std::string::npos);
+}
+
+ADD_TEST(medical_label_layout_can_override_settings) {
+    MedicalLabelData data;
+    data.sampleNo     = "22";
+    data.testItem     = "CBC";
+    data.barcodeValue = "123";
+    data.patientName  = "ABC";
+    data.specimenType = "BLOOD";
+    data.patientId    = "999";
+    data.timestamp    = "2026/1/1";
+
+    MedicalLabelLayout layout;
+    layout.settings.width = 320;
+    layout.settings.height = 180;
+    layout.settings.homeX = 12;
+    layout.settings.homeY = 14;
+
+    LabelDocument doc = buildMedicalLabel(data, layout);
+
+    ASSERT_EQ(doc.settings().width, 320);
+    ASSERT_EQ(doc.settings().height, 180);
+    ASSERT_EQ(doc.settings().homeX, 12);
+    ASSERT_EQ(doc.settings().homeY, 14);
+}
+
+ADD_TEST(medical_label_layout_can_override_fields) {
+    MedicalLabelData data;
+    data.sampleNo     = "22";
+    data.testItem     = "CBC";
+    data.barcodeValue = "123";
+    data.patientName  = "ABC";
+    data.specimenType = "BLOOD";
+    data.patientId    = "999";
+    data.timestamp    = "2026/1/1";
+    data.department   = "WARD";
+
+    MedicalLabelLayout layout;
+    layout.rowGap = 28;
+    layout.sampleNo = {{11, 12}, 40, 24, Font::Bold};
+    layout.barcode = {{31, 82}, 90, 4, true};
+    layout.patientName = {{9, 160}, 24, 18, Font::Medium};
+    layout.timestamp = {{210, 198}, 16, 10, Font::Small};
+
+    LabelDocument doc = buildMedicalLabel(data, layout);
+
+    ASSERT_EQ(layout.rowGap, 28);
+    ASSERT_EQ(doc.texts()[0].x, 11);
+    ASSERT_EQ(doc.texts()[0].y, 12);
+    ASSERT_EQ(doc.texts()[0].height, 40);
+    ASSERT_EQ(doc.texts()[0].width, 24);
+    ASSERT_EQ(doc.barcodes()[0].x, 31);
+    ASSERT_EQ(doc.barcodes()[0].y, 82);
+    ASSERT_EQ(doc.barcodes()[0].height, 90);
+    ASSERT_EQ(doc.barcodes()[0].narrowWidth, 4);
+    ASSERT_EQ(doc.barcodes()[0].printTextBelow, true);
+    ASSERT_EQ(doc.texts()[3].x, 9);
+    ASSERT_EQ(doc.texts()[3].y, 160);
+    ASSERT_EQ(doc.texts()[7].x, 210);
+    ASSERT_EQ(doc.texts()[7].y, 198);
 }
 
 // ---------------------------------------------------------------------------

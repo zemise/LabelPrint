@@ -39,18 +39,54 @@ add_subdirectory(path/to/labelprint)
 target_link_libraries(your_app PRIVATE labelprint)
 ```
 
-The library target `labelprint` is a static library. It automatically sets up include paths (`include/`) and links `gdiplus.lib` on MSVC. C++17 is required.
+The library target `labelprint` is a static library. It automatically sets up include paths (`include/`) and links the required Windows SDK libraries on Windows. C++17 is required.
 
 ### Pre-built release (no build needed)
 
-Download `labelprint-vX.Y.Z-windows-x64.zip` from [GitHub Releases](https://github.com/zemise/labelprint/releases).
+Download one of the Windows x64 packages from [GitHub Releases](https://github.com/zemise/labelprint/releases):
+
+| Package suffix | Use when |
+|---|---|
+| `windows-x64-vs2026` | Normal Windows x64 build |
+| `windows-x64-vs2022-win7` | Windows 7 compatibility is required |
+
+The Win7 package is fixed to `WINVER=0x0601`, `_WIN32_WINNT=0x0601`, and the static MSVC runtime.
+
+Release layout:
+
+```
+include/labelprint/...
+lib/labelprint.lib
+cmake/LabelPrintConfig.cmake
+cmake/LabelPrintTargets.cmake
+README.md
+API.md
+```
+
+Use it from CMake:
+
+```cmake
+find_package(LabelPrint CONFIG REQUIRED)
+target_link_libraries(your_app PRIVATE LabelPrint::labelprint)
+```
+
+Configure with the unzipped package root in `CMAKE_PREFIX_PATH`:
+
+```powershell
+cmake -S . -B build -DCMAKE_PREFIX_PATH=C:\path\to\labelprint-vX.Y.Z-windows-x64-vs2026
+cmake --build build --config Release
+```
+
+The imported target provides the include path and Windows SDK link libraries.
+
+Manual usage is also supported:
 
 ```
 # Include
--Ilabelprint/include -Ilabelprint
+-Ilabelprint/include
 
 # Link
-labelprint.lib gdiplus.lib
+labelprint.lib gdiplus.lib ws2_32.lib winspool.lib
 ```
 
 ### Manual build
@@ -60,8 +96,8 @@ git clone https://github.com/zemise/labelprint.git
 cd labelprint
 cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release
 cmake --build build
-# Link: build/labelprint.lib + gdiplus.lib
-# Include: -Ilabelprint/include -Ilabelprint
+cmake --install build --prefix package
+# Release-style package: package/include, package/lib, package/cmake
 ```
 
 ### Header
@@ -78,10 +114,11 @@ cmake --build build
 
 | Requirement | Notes |
 |---|---|
+| CMake | 3.15 or later |
 | C++ standard | C++17 or later |
 | Compiler | MSVC (VS 2022+), Clang, GCC |
 | Windows SDK | Required for `WindowsRawTransport` and `TsplBitmapBackend` |
-| gdiplus.lib | Required (bundled with Windows SDK) |
+| Windows libraries | Manual link users must link `gdiplus.lib`, `ws2_32.lib`, and `winspool.lib` |
 
 ---
 
@@ -461,9 +498,62 @@ struct MedicalLabelData {
 ```cpp
 LabelDocument buildMedicalLabel(const MedicalLabelData& data,
                                 const LabelSettings& cfg);
+
+LabelDocument buildMedicalLabel(const MedicalLabelData& data,
+                                const MedicalLabelLayout& layout);
 ```
 
 Produces a `LabelDocument` with 8 fields at verified XP-360B positions (50×30 mm label, 203 DPI). You can further modify the returned document before rendering.
+
+### MedicalLabelLayout
+
+Use `MedicalLabelLayout` when label geometry or field positions need to vary by printer, media, or hospital template.
+
+```cpp
+struct MedicalLabelLayout {
+    LabelSettings settings;              // width, height, homeX, homeY, etc.
+    int rowGap = 30;                     // row spacing hint for callers
+
+    MedicalLabelTextLayout sampleNo;
+    MedicalLabelTextLayout testItem;
+    MedicalLabelBarcodeLayout barcode;
+    MedicalLabelTextLayout barcodeText;
+    MedicalLabelTextLayout patientName;
+    MedicalLabelTextLayout specimenType;
+    MedicalLabelTextLayout department;
+    MedicalLabelTextLayout patientId;
+    MedicalLabelTextLayout timestamp;
+};
+```
+
+Each text field controls position, character size, and font:
+
+```cpp
+MedicalLabelLayout layout;
+layout.settings.width = 400;
+layout.settings.height = 240;
+layout.settings.homeX = 5;
+layout.settings.homeY = 5;
+
+layout.sampleNo = {{5, 5}, 36, 22, Font::Bold};
+layout.testItem = {{5, 44}, 30, 18, Font::Medium};
+layout.barcode = {{20, 72}, 75, 3, false};
+layout.barcodeText = {{135, 152}, 18, 13, Font::Medium};
+
+LabelDocument doc = buildMedicalLabel(data, layout);
+```
+
+The default `MedicalLabelLayout` matches the original XP-360B verified layout.
+
+### Stable API surface
+
+These names are kept stable for consumers:
+
+- `MedicalLabelData`
+- `LabelSettings`
+- `buildMedicalLabel`
+- `TsplBitmapBackend`
+- `WindowsRawTransport`
 
 ---
 

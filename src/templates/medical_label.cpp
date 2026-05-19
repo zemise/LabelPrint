@@ -2,32 +2,53 @@
 
 namespace labelprint {
 
+namespace {
+
+void addText(LabelDocument& doc,
+             const MedicalLabelTextLayout& layout,
+             const std::string& text) {
+    doc.addText(layout.pos.x, layout.pos.y, text,
+                layout.height, layout.width, layout.font);
+}
+
+} // namespace
+
 LabelDocument buildMedicalLabel(const MedicalLabelData& data,
                                 const LabelSettings& cfg) {
-    LabelDocument doc(cfg);
+    MedicalLabelLayout layout;
+    layout.settings = cfg;
+    return buildMedicalLabel(data, layout);
+}
+
+LabelDocument buildMedicalLabel(const MedicalLabelData& data,
+                                const MedicalLabelLayout& layout) {
+    LabelDocument doc(layout.settings);
 
     // Row 1: Sample number (large, bold)
-    doc.addText(5, 5, data.sampleNo, 36, 22, Font::Bold);
+    addText(doc, layout.sampleNo, data.sampleNo);
 
     // Row 2: Test item name
-    doc.addText(5, 44, data.testItem, 30, 18, Font::Medium);
+    addText(doc, layout.testItem, data.testItem);
 
     // Barcode
-    doc.addBarcode(20, 72, data.barcodeValue, 75, 3, false);
+    doc.addBarcode(layout.barcode.pos.x, layout.barcode.pos.y,
+                   data.barcodeValue, layout.barcode.height,
+                   layout.barcode.narrowWidth,
+                   layout.barcode.printTextBelow);
 
     // Human-readable barcode text
-    doc.addText(135, 152, data.barcodeValue, 18, 13, Font::Medium);
+    addText(doc, layout.barcodeText, data.barcodeValue);
 
     // Row 3: Patient name, specimen type, department
-    doc.addText(5, 175, data.patientName, 28, 22, Font::Medium);
-    doc.addText(145, 175, data.specimenType, 26, 20, Font::Medium);
+    addText(doc, layout.patientName, data.patientName);
+    addText(doc, layout.specimenType, data.specimenType);
     if (!data.department.empty()) {
-        doc.addText(245, 175, data.department, 26, 19, Font::Small);
+        addText(doc, layout.department, data.department);
     }
 
     // Row 4: Patient ID, timestamp
-    doc.addText(5, 205, data.patientId, 20, 14, Font::Medium);
-    doc.addText(245, 205, data.timestamp, 18, 11, Font::Small);
+    addText(doc, layout.patientId, data.patientId);
+    addText(doc, layout.timestamp, data.timestamp);
 
     return doc;
 }

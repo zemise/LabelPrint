@@ -146,7 +146,7 @@ Test infrastructure established:
 - `test/test_document.cpp` — 10 document model & profile tests
 - `test/test_backends.cpp` — 14 backend output & PrintJob tests
 - `CMakeLists.txt` — `test_runner` CMake target
-- All 24 tests pass
+- All 27 tests pass
 
 ## Suggested next improvements
 

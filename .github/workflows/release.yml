@@ -9,14 +9,25 @@ permissions:
 
 jobs:
   release:
-    runs-on: windows-latest
+    name: ${{ matrix.package_suffix }}
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - package_suffix: windows-x64-vs2026
+            runner: windows-latest
+            cmake_args: -DLABELPRINT_BUILD_DEMO=OFF
+          - package_suffix: windows-x64-vs2022-win7
+            runner: windows-2022
+            cmake_args: -DLABELPRINT_BUILD_DEMO=OFF -DLABELPRINT_WIN7_COMPAT=ON -DLABELPRINT_STATIC_MSVC_RUNTIME=ON
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
       - name: Configure CMake (Release)
-        run: cmake -S . -B build
+        run: cmake -S . -B build -A x64 ${{ matrix.cmake_args }}
 
       - name: Build
         run: cmake --build build --config Release
@@ -27,11 +38,8 @@ jobs:
       - name: Package release artifact
         shell: pwsh
         run: |
-          $name = "labelprint-${{ github.ref_name }}-windows-x64"
-          New-Item -ItemType Directory -Path release/labelprint -Force
-          Copy-Item -Recurse include/labelprint/* release/labelprint/
-          Copy-Item build/Release/labelprint.lib release/
-          Copy-Item API.md,README.md release/
+          $name = "labelprint-${{ github.ref_name }}-${{ matrix.package_suffix }}"
+          cmake --install build --config Release --prefix release
           Compress-Archive -Path release/* -DestinationPath "$name.zip"
 
       - name: Create Release
@@ -43,10 +51,15 @@ jobs:
 
             Static library + headers for Windows x64.
 
+            ### Artifacts
+            - `windows-x64-vs2026`: normal Windows x64 build.
+            - `windows-x64-vs2022-win7`: Windows 7 compatible build, compiled with `WINVER=0x0601`, `_WIN32_WINNT=0x0601`, and the static MSVC runtime.
+
             ### Usage
             ```
             #include "labelprint/labelprint.h"
-            // Link: labelprint.lib + gdiplus.lib
+            // CMake: find_package(LabelPrint CONFIG REQUIRED)
+            //        target_link_libraries(app PRIVATE LabelPrint::labelprint)
             ```
 
             See [API.md](${{ github.server_url }}/${{ github.repository }}/blob/main/API.md) for full documentation.

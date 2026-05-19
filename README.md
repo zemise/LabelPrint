@@ -15,7 +15,7 @@ C++ label printing library — printer-independent document model with ZPL/TSPL 
 - **Phase 4 complete:** `TsplBitmapBackend` with GDI+ Chinese text rendering.
 - **Phase 5 complete:** Template API (`MedicalLabelData` + `buildMedicalLabel`).
 - **Phase 6 complete:** Transport layer (`FileTransport`, `WindowsRawTransport`, `Tcp9100Transport`).
-- **Phase 7 complete:** Test infrastructure (`test_runner.exe`), 24 tests covering document model + backend output.
+- **Phase 7 complete:** Test infrastructure (`test_runner.exe`), 27 tests covering document model + backend output.
 
 ## Project structure
 
@@ -67,20 +67,69 @@ git push origin v1.0.1
 The [Release](.github/workflows/release.yml) workflow automatically:
 - Builds `labelprint.lib` (Release, Windows x64)
 - Runs the full test suite
-- Packages headers + library into a `.zip`
+- Packages headers, library, CMake config files, and docs into a `.zip`
 - Creates a GitHub Release with the artifact
+
+Release zip layout:
+
+```
+include/labelprint/...
+lib/labelprint.lib
+cmake/LabelPrintConfig.cmake
+cmake/LabelPrintConfigVersion.cmake
+cmake/LabelPrintTargets.cmake
+cmake/LabelPrintTargets-release.cmake
+README.md
+API.md
+```
+
+Windows release variants:
+
+| Package suffix | Toolchain | Compatibility |
+|---|---|---|
+| `windows-x64-vs2026` | Windows latest runner / current Visual Studio toolchain | Normal Windows x64 package |
+| `windows-x64-vs2022-win7` | Windows 2022 runner / Visual Studio 2022 | Windows 7 compatible package |
+
+The Win7 compatible package is always built with:
+
+```cmake
+WINVER=0x0601
+_WIN32_WINNT=0x0601
+CMAKE_MSVC_RUNTIME_LIBRARY=MultiThreaded
+```
 
 ---
 
 ## Using the library in other projects
 
-### Method 1: CMake `add_subdirectory` (recommended)
+### Method 1: CMake package from release zip (recommended for consumers)
+
+Unzip the release package, then point `CMAKE_PREFIX_PATH` at the package root:
+
+```cmake
+cmake_minimum_required(VERSION 3.15)
+project(your-app LANGUAGES CXX)
+
+find_package(LabelPrint CONFIG REQUIRED)
+
+add_executable(your_app main.cpp)
+target_link_libraries(your_app PRIVATE LabelPrint::labelprint)
+```
+
+Configure:
+
+```powershell
+cmake -S . -B build -DCMAKE_PREFIX_PATH=C:\path\to\labelprint-v1.0.1-windows-x64-vs2026
+cmake --build build --config Release
+```
+
+### Method 2: CMake `add_subdirectory`
 
 Copy this repository into your project tree, then:
 
 ```cmake
 # Your project's CMakeLists.txt
-cmake_minimum_required(VERSION 3.14)
+cmake_minimum_required(VERSION 3.15)
 project(your-app LANGUAGES CXX)
 
 add_subdirectory(libs/labelprint)
@@ -119,7 +168,30 @@ int main() {
 }
 ```
 
-### Method 2: Manual include + link
+For printer- or template-specific layouts, pass `MedicalLabelLayout` instead of raw `LabelSettings`:
+
+```cpp
+MedicalLabelLayout layout;
+layout.settings.width = 400;
+layout.settings.height = 240;
+layout.settings.homeX = 5;
+layout.settings.homeY = 5;
+layout.sampleNo = {{5, 5}, 36, 22, Font::Bold};
+layout.barcode = {{20, 72}, 75, 3, false};
+layout.patientName = {{5, 175}, 28, 22, Font::Medium};
+
+LabelDocument doc = buildMedicalLabel(data, layout);
+```
+
+Stable public API:
+
+- `MedicalLabelData`
+- `LabelSettings`
+- `buildMedicalLabel`
+- `TsplBitmapBackend`
+- `WindowsRawTransport`
+
+### Method 3: Manual include + link
 
 Build the static library first:
 
@@ -132,15 +204,16 @@ cmake --build out/build/x64-Release
 Then in your project:
 
 ```
-Compiler flags:  /std:c++17 -Ilabelprint/include -Ilabelprint
-Linker flags:    labelprint.lib gdiplus.lib
+Compiler flags:  /std:c++17 -Ilabelprint/include
+Linker flags:    labelprint.lib gdiplus.lib ws2_32.lib winspool.lib
 ```
 
 ### Build requirements
 
 - C++17
+- CMake 3.15 or later
 - Windows: MSVC (VS 2022 or later)
-- Link `gdiplus.lib` (required by `TsplBitmapBackend`)
+- Manual link users must link `gdiplus.lib`, `ws2_32.lib`, and `winspool.lib`
 
 ---
 
@@ -186,7 +259,7 @@ powershell -ExecutionPolicy Bypass -File .\RawTSPL.ps1 -PrinterName "Xprinter XP
 | `main.cpp` | C++ sample using backends API |
 | `GenerateLabelTsplCn.ps1` | Chinese bitmap TSPL generator (superseded, kept as reference) |
 | `test/test_utils.h` | Shared test macros and registry |
-| `test/test_main.cpp` | Test runner (24 tests, run with `test_runner.exe`) |
+| `test/test_main.cpp` | Test runner (27 tests, run with `test_runner.exe`) |
 | `RawTSPL.ps1` | RAW print sender via WinSpool |
 | `RawZPL.ps1` | RAW ZPL sender (reference) |
 | `preview_render.py` | Local PIL-based label preview |
@@ -206,7 +279,7 @@ See [ARCHITECTURE.md](ARCHITECTURE.md) for the full 7-phase plan.
 ## Running tests
 
 ```bash
-# Build and run C++ unit tests (24 tests)
+# Build and run C++ unit tests (27 tests)
 cmake --build out/build/x64-Debug --target test_runner
 ./out/build/x64-Debug/test_runner.exe
 ```
