@@ -1,4 +1,4 @@
-# API Reference · v1.0.0
+# API Reference · v1.1.0
 
 ## Architecture
 
@@ -288,6 +288,7 @@ public:
 
     BarcodeElement& addBarcode(int x, int y, const std::string& data,
                                int barHeight = 100, int narrowWidth = 2,
+                               double wideRatio = 3.0,
                                bool printText = true);
     BarcodeElement& addBarcode(const BarcodeElement& b);
 
@@ -315,7 +316,7 @@ t.fontName   = Font::Large;
 ```cpp
 LabelDocument doc(LabelSettings{400, 240});
 doc.addText(5, 5, "Sample: 22", 30, 20, Font::Medium);
-doc.addBarcode(20, 72, "008085125", 75, 2, false);
+doc.addBarcode(20, 72, "008085125", 75, 2, 3.0, false);
 doc.addLine(10, 160, 380, true, 1);
 doc.addBox(0, 0, 400, 240, 2);
 ```
@@ -337,7 +338,8 @@ struct PrinterProfile {
     int maxWidth, maxHeight;      // printable area (dots)
 
     bool nativeBarcode;           // supports built-in BARCODE commands
-    bool nativeChinese;           // has built-in CJK font
+    bool nativeChinese;           // has available CJK font support
+    std::string nativeChineseFont; // e.g. E:CSONG.TTF for Zebra ZPL
     bool bitmapGraphics;          // supports BITMAP / ~DG commands
 
     TextStrategy textStrategy;    // recommended approach for text
@@ -408,7 +410,7 @@ public:
 
 ```
 ASCII text     → TsplBackend (fast, clean output)
-Chinese text   → TsplBitmapBackend (GDI+ rendering, verified on XP-360B)
+Chinese text   -> TsplBitmapBackend for XP-360B, native ZPL font for verified ZD888 profiles
 Zebra printer  → ZplBackend (ZPL output)
 ```
 
@@ -526,6 +528,32 @@ struct MedicalLabelLayout {
 };
 ```
 
+**`MedicalLabelTextLayout`** — controls position, size, font, and optional wrapping:
+
+```cpp
+struct MedicalLabelTextLayout {
+    MedicalLabelPoint pos;
+    int height = 30;          // character height (dots)
+    int width = 20;           // character width (dots)
+    std::string font = Font::Default;
+    int maxWidth = 0;         // max width before wrapping (dots, 0 = no wrap)
+    int lineGap = 2;          // vertical gap between wrapped lines (dots)
+    int maxLines = 1;         // max number of wrapped lines
+};
+```
+
+**`MedicalLabelBarcodeLayout`** — controls barcode position, size, and appearance:
+
+```cpp
+struct MedicalLabelBarcodeLayout {
+    MedicalLabelPoint pos;
+    int height = 75;            // bar height (dots)
+    int narrowWidth = 2;        // narrow bar width (dots)
+    double wideRatio = 2.0;     // wide:narrow bar ratio
+    bool printTextBelow = false;
+};
+```
+
 Each text field controls position, character size, and font:
 
 ```cpp
@@ -535,15 +563,15 @@ layout.settings.height = 240;
 layout.settings.homeX = 5;
 layout.settings.homeY = 5;
 
-layout.sampleNo = {{5, 5}, 36, 22, Font::Bold};
-layout.testItem = {{5, 44}, 30, 18, Font::Medium};
-layout.barcode = {{20, 72}, 75, 3, false};
-layout.barcodeText = {{135, 152}, 18, 13, Font::Medium};
+layout.sampleNo = {{5, 5}, 28, 16, Font::Medium};
+layout.testItem = {{88, 8}, 22, 16, Font::Medium, 290, 2, 2};
+layout.barcode = {{66, 72}, 75, 2, 3.0, false};
+layout.barcodeText = {{142, 152}, 18, 13, Font::Medium};
 
 LabelDocument doc = buildMedicalLabel(data, layout);
 ```
 
-The default `MedicalLabelLayout` matches the original XP-360B verified layout.
+The default `MedicalLabelLayout` targets 50×30 mm labels at 203 DPI (400×240 dots).
 
 ### Stable API surface
 
@@ -586,7 +614,7 @@ WindowsRawTransport().send(job, PrinterConnection{"Xprinter XP-360B #2"});
 ```cpp
 LabelDocument doc(LabelSettings{400, 240});
 doc.addText(5, 5, "Patient: ABC", 30, 20, Font::Medium);
-doc.addBarcode(20, 72, "1234567890", 80, 3);
+doc.addBarcode(20, 72, "1234567890", 80, 3, 3.0);
 doc.addLine(5, 160, 390, true, 1);
 doc.addBox(0, 0, 400, 240, 2);
 
@@ -608,7 +636,7 @@ t.renderMode = TextRenderMode::Bitmap;  // force GDI+ rendering
 LabelDocument buildShippingLabel(const ShippingData& data, const LabelSettings& cfg) {
     LabelDocument doc(cfg);
     doc.addText(10, 10, data.trackingNo, 35, 22, Font::Bold);
-    doc.addBarcode(20, 60, data.trackingNo, 80, 2);
+    doc.addBarcode(20, 60, data.trackingNo, 80, 2, 3.0);
     doc.addText(10, 150, data.address, 28, 18, Font::Small);
     return doc;
 }
@@ -633,10 +661,10 @@ WindowsRawTransport().send(job, PrinterConnection{"Xprinter XP-360B #2"});
 LABELPRINT_VERSION_MAJOR   // 1
 LABELPRINT_VERSION_MINOR   // 0
 LABELPRINT_VERSION_PATCH   // 0
-LABELPRINT_VERSION_STRING  // "1.0.0"
+LABELPRINT_VERSION_STRING  // "1.1.0"
 ```
 
-The version also appears in CMake: `project(LabelPrint VERSION 1.0.0)`.
+The version also appears in CMake: `project(LabelPrint VERSION 1.1.0)`.
 
 ---
 

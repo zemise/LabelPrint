@@ -4,7 +4,7 @@ if(POLICY CMP0091)
     cmake_policy(SET CMP0091 NEW)
 endif()
 
-project(LabelPrint VERSION 1.0.0 LANGUAGES CXX)
+project(LabelPrint VERSION 1.1.0 LANGUAGES CXX)
 
 include(GNUInstallDirs)
 include(CMakePackageConfigHelpers)

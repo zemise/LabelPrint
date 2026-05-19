@@ -97,8 +97,9 @@ ZplLabel& ZplLabel::textTtf(int x, int y, const std::string& str,
 }
 
 ZplLabel& ZplLabel::barcode(int x, int y, const std::string& data,
-                             int barHeight, int modW, bool printText) {
-    return addBarcode({x, y, data, barHeight, modW, 3.0, printText, Orient::Normal, "N"});
+                             int barHeight, int modW, double ratio,
+                             bool printText) {
+    return addBarcode({x, y, data, barHeight, modW, ratio, printText, Orient::Normal, "N"});
 }
 
 // ---------------------------------------------------------------------------

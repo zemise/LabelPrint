@@ -31,7 +31,7 @@ ADD_TEST(document_holds_text_elements) {
 ADD_TEST(document_holds_barcode_elements) {
     LabelSettings cfg;
     LabelDocument doc(cfg);
-    doc.addBarcode(20, 72, "008085125", 75, 3, false);
+    doc.addBarcode(20, 72, "008085125", 75, 3, 3.0, false);
     ASSERT_EQ(doc.barcodes().size(), 1u);
     ASSERT_EQ(doc.barcodes()[0].data, "008085125");
     ASSERT_EQ(doc.barcodes()[0].height, 75);
@@ -62,7 +62,7 @@ ADD_TEST(document_clear_removes_all_elements) {
     LabelSettings cfg;
     LabelDocument doc(cfg);
     doc.addText(0, 0, "A", 1, 1, Font::Default);
-    doc.addBarcode(0, 0, "1", 1, 1, true);
+    doc.addBarcode(0, 0, "1", 1, 1, 3.0, true);
     doc.addLine(0, 0, 1, true, 1);
     doc.addBox(0, 0, 1, 1, 1);
     doc.clear();
@@ -94,4 +94,8 @@ ADD_TEST(printer_profile_zd888) {
     const auto& p = PrinterProfiles::zebra_zd888();
     ASSERT_EQ(p.dpi, 203);
     ASSERT(p.language == PrinterLanguage::ZPL);
+    ASSERT_EQ(p.nativeBarcode, true);
+    ASSERT_EQ(p.nativeChinese, true);
+    ASSERT(p.textStrategy == TextStrategy::Native);
+    ASSERT_EQ(p.nativeChineseFont, "E:CSONG.TTF");
 }

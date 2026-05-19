@@ -60,9 +60,10 @@ public:
 
     BarcodeElement& addBarcode(int x, int y, const std::string& data,
                                int barH = 100, int narrowW = 2,
+                               double wideRatio = 3.0,
                                bool printText = true) {
         return addBarcode({x, y, data, BarcodeType::Code128,
-                           barH, narrowW, 3.0, printText});
+                           barH, narrowW, wideRatio, printText});
     }
 
     LineElement& addLine(const LineElement& l) {

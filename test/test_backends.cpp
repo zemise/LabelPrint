@@ -30,7 +30,7 @@ static LabelSettings testSettings() {
 static LabelDocument makeDoc() {
     LabelDocument doc(testSettings());
     doc.addText(5, 5, "TEST", 30, 20, Font::Medium);
-    doc.addBarcode(20, 72, "123456", 75, 3, false);
+    doc.addBarcode(20, 72, "123456", 75, 3, 3.0, false);
     return doc;
 }
 
@@ -82,6 +82,19 @@ ADD_TEST(zpl_output_contains_label_settings) {
     ASSERT(zpl.find("^PW400") != std::string::npos);
     ASSERT(zpl.find("^LL240") != std::string::npos);
     ASSERT(zpl.find("~SD25") != std::string::npos);
+}
+
+ADD_TEST(zpl_cjk_text_uses_profile_native_font) {
+    LabelDocument doc(testSettings());
+    doc.addText(5, 5, u8"中文测试", 30, 20, Font::Medium);
+
+    const auto& profile = PrinterProfiles::zebra_zd888();
+    ZplBackend backend;
+    PrintJob job = backend.render(doc, profile);
+    std::string zpl = job.asText();
+
+    ASSERT(zpl.find("^A@N,30,20,E:CSONG.TTF") != std::string::npos);
+    ASSERT(zpl.find(u8"中文测试") != std::string::npos);
 }
 
 // ---------------------------------------------------------------------------
@@ -237,7 +250,7 @@ ADD_TEST(medical_label_layout_can_override_fields) {
     MedicalLabelLayout layout;
     layout.rowGap = 28;
     layout.sampleNo = {{11, 12}, 40, 24, Font::Bold};
-    layout.barcode = {{31, 82}, 90, 4, true};
+    layout.barcode = {{31, 82}, 90, 4, 2.0, true};
     layout.patientName = {{9, 160}, 24, 18, Font::Medium};
     layout.timestamp = {{210, 198}, 16, 10, Font::Small};
 
@@ -257,6 +270,41 @@ ADD_TEST(medical_label_layout_can_override_fields) {
     ASSERT_EQ(doc.texts()[3].y, 160);
     ASSERT_EQ(doc.texts()[7].x, 210);
     ASSERT_EQ(doc.texts()[7].y, 198);
+}
+
+ADD_TEST(medical_label_wraps_test_item) {
+    MedicalLabelData data;
+    data.sampleNo     = "22";
+    data.testItem     = "ABCDEFGHIJK";
+    data.barcodeValue = "123";
+    data.patientName  = "ABC";
+    data.specimenType = "BLOOD";
+    data.patientId    = "999";
+    data.timestamp    = "2026/1/1";
+
+    MedicalLabelLayout layout;
+    layout.testItem.pos = {88, 8};
+    layout.testItem.height = 22;
+    layout.testItem.width = 16;
+    layout.testItem.maxWidth = 80;
+    layout.testItem.maxLines = 2;
+    layout.testItem.lineGap = 3;
+
+    LabelDocument doc = buildMedicalLabel(data, layout);
+
+    ASSERT_EQ(doc.texts()[0].x, 5);
+    ASSERT_EQ(doc.texts()[1].x, 88);
+    ASSERT_EQ(doc.texts()[1].y, 8);
+    ASSERT_EQ(doc.texts()[2].x, 88);
+    ASSERT_EQ(doc.texts()[2].y, 33);
+
+    MedicalLabelLayout defaultLayout;
+    LabelDocument defaultDoc = buildMedicalLabel(data, defaultLayout);
+
+    ASSERT_EQ(defaultDoc.texts()[0].height, 28);
+    ASSERT_EQ(defaultDoc.texts()[0].width, 16);
+    ASSERT_EQ(defaultDoc.texts()[1].x, 88);
+    ASSERT_EQ(defaultDoc.barcodes()[0].narrowWidth, 2);
 }
 
 // ---------------------------------------------------------------------------

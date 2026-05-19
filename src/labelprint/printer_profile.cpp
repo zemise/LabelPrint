@@ -35,9 +35,10 @@ const PrinterProfile& PrinterProfiles::zebra_zd888() {
         p.maxWidth         = 812;
         p.maxHeight        = 1200;
         p.nativeBarcode    = true;
-        p.nativeChinese    = false;   // needs TTF font file on printer
+        p.nativeChinese    = true;    // verified with E:CSONG.TTF on the device
         p.bitmapGraphics   = true;
-        p.textStrategy     = TextStrategy::Auto;
+        p.textStrategy     = TextStrategy::Native;
+        p.nativeChineseFont = "E:CSONG.TTF";
         p.gapMm            = 2;
         p.gapOffsetMm      = 0;
         p.darkness         = 25;

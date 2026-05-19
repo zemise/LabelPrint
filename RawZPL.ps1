@@ -1,64 +1,79 @@
-# RawZPL.ps1 — 绕过驱动直接发送 ZPL 到打印机
 param(
     [string]$PrinterName = "ZDesigner ZD888-203dpi ZPL",
     [string]$ZplFile     = "label_medical.zpl"
 )
 
-$zpl = [IO.File]::ReadAllText((Join-Path $PSScriptRoot $ZplFile))
+$path = Join-Path $PSScriptRoot $ZplFile
+if (-not (Test-Path $path)) {
+    throw "Cannot find ZPL file: $path"
+}
+
+$bytes = [IO.File]::ReadAllBytes($path)
 
 $code = @'
 using System;
-using System.IO;
 using System.Runtime.InteropServices;
 
 public class RawPrinter {
     [StructLayout(LayoutKind.Sequential)]
-    private struct DOCINFOA {
+    public class DOCINFOA {
         [MarshalAs(UnmanagedType.LPStr)] public string pDocName;
         [MarshalAs(UnmanagedType.LPStr)] public string pOutputFile;
         [MarshalAs(UnmanagedType.LPStr)] public string pDataType;
     }
 
-    [DllImport("winspool.Drv", SetLastError = true)]
-    private static extern int OpenPrinter(string pPrinterName, out IntPtr hPrinter, IntPtr pDefault);
+    [DllImport("winspool.Drv", EntryPoint="OpenPrinterA", SetLastError=true, CharSet=CharSet.Ansi)]
+    public static extern bool OpenPrinter(string pPrinterName, out IntPtr hPrinter, IntPtr pDefault);
 
-    [DllImport("winspool.Drv", SetLastError = true)]
-    private static extern int StartDocPrinter(IntPtr hPrinter, int level, ref DOCINFOA di);
+    [DllImport("winspool.Drv", SetLastError=true)]
+    public static extern bool StartDocPrinter(IntPtr hPrinter, int level, DOCINFOA di);
 
-    [DllImport("winspool.Drv", SetLastError = true)]
-    private static extern int EndDocPrinter(IntPtr hPrinter);
+    [DllImport("winspool.Drv", SetLastError=true)]
+    public static extern bool EndDocPrinter(IntPtr hPrinter);
 
-    [DllImport("winspool.Drv", SetLastError = true)]
-    private static extern int StartPagePrinter(IntPtr hPrinter);
+    [DllImport("winspool.Drv", SetLastError=true)]
+    public static extern bool StartPagePrinter(IntPtr hPrinter);
 
-    [DllImport("winspool.Drv", SetLastError = true)]
-    private static extern int EndPagePrinter(IntPtr hPrinter);
+    [DllImport("winspool.Drv", SetLastError=true)]
+    public static extern bool EndPagePrinter(IntPtr hPrinter);
 
-    [DllImport("winspool.Drv", SetLastError = true)]
-    private static extern int WritePrinter(IntPtr hPrinter, byte[] pBuf, int cbBuf, out int pcWritten);
+    [DllImport("winspool.Drv", SetLastError=true)]
+    public static extern bool WritePrinter(IntPtr hPrinter, byte[] pBuf, int cbBuf, out int pcWritten);
 
-    [DllImport("winspool.Drv", SetLastError = true)]
-    private static extern int ClosePrinter(IntPtr hPrinter);
-
-    public static void SendRaw(string printer, byte[] data) {
-        IntPtr hPrinter = IntPtr.Zero;
-        if (OpenPrinter(printer, out hPrinter, IntPtr.Zero) == 0)
-            throw new Exception("Cannot open printer: " + printer);
-
-        var di = new DOCINFOA { pDocName = "ZPL Label", pDataType = "RAW" };
-        StartDocPrinter(hPrinter, 1, ref di);
-        StartPagePrinter(hPrinter);
-
-        int written;
-        WritePrinter(hPrinter, data, data.Length, out written);
-
-        EndPagePrinter(hPrinter);
-        EndDocPrinter(hPrinter);
-        ClosePrinter(hPrinter);
-    }
+    [DllImport("winspool.Drv", SetLastError=true)]
+    public static extern bool ClosePrinter(IntPtr hPrinter);
 }
 '@
 
 Add-Type -TypeDefinition $code -ErrorAction Stop
-[RawPrinter]::SendRaw($PrinterName, [Text.Encoding]::UTF8.GetBytes($zpl))
-Write-Host "sent $($zpl.Length) bytes → $PrinterName"
+$doc = New-Object RawPrinter+DOCINFOA
+$doc.pDocName = "ZPL Label"
+$doc.pDataType = "RAW"
+
+$hPrinter = [IntPtr]::Zero
+if (-not [RawPrinter]::OpenPrinter($PrinterName, [ref]$hPrinter, [IntPtr]::Zero)) {
+    throw "Cannot open printer: $PrinterName"
+}
+
+try {
+    if (-not [RawPrinter]::StartDocPrinter($hPrinter, 1, $doc)) {
+        throw "StartDocPrinter failed"
+    }
+    if (-not [RawPrinter]::StartPagePrinter($hPrinter)) {
+        throw "StartPagePrinter failed"
+    }
+
+    $written = 0
+    if (-not [RawPrinter]::WritePrinter($hPrinter, $bytes, $bytes.Length, [ref]$written)) {
+        throw "WritePrinter failed"
+    }
+
+    [RawPrinter]::EndPagePrinter($hPrinter) | Out-Null
+    [RawPrinter]::EndDocPrinter($hPrinter) | Out-Null
+    Write-Host "sent $written bytes -> $PrinterName"
+}
+finally {
+    if ($hPrinter -ne [IntPtr]::Zero) {
+        [RawPrinter]::ClosePrinter($hPrinter) | Out-Null
+    }
+}

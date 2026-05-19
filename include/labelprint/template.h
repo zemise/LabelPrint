@@ -33,12 +33,16 @@ struct MedicalLabelTextLayout {
     int height = 30;
     int width = 20;
     std::string font = Font::Default;
+    int maxWidth = 0;       // optional, in dots; 0 means no wrapping
+    int lineGap = 2;        // vertical gap between wrapped lines
+    int maxLines = 1;       // maximum wrapped lines
 };
 
 struct MedicalLabelBarcodeLayout {
     MedicalLabelPoint pos;
     int height = 75;
-    int narrowWidth = 3;
+    int narrowWidth = 2;
+    double wideRatio = 2.0;
     bool printTextBelow = false;
 };
 
@@ -47,31 +51,31 @@ struct MedicalLabelLayout {
     int rowGap = 30;
 
     MedicalLabelTextLayout sampleNo{
-        {5, 5}, 36, 22, Font::Bold
+        {5, 5}, 28, 16, Font::Medium, 0, 2, 1
     };
     MedicalLabelTextLayout testItem{
-        {5, 44}, 30, 18, Font::Medium
+        {88, 8}, 22, 16, Font::Medium, 290, 2, 2
     };
     MedicalLabelBarcodeLayout barcode{
-        {20, 72}, 75, 3, false
+        {66, 72}, 75, 2, 3.0, false
     };
     MedicalLabelTextLayout barcodeText{
-        {135, 152}, 18, 13, Font::Medium
+        {142, 152}, 18, 13, Font::Medium, 0, 2, 1
     };
     MedicalLabelTextLayout patientName{
-        {5, 175}, 28, 22, Font::Medium
+        {5, 175}, 28, 22, Font::Medium, 0, 2, 1
     };
     MedicalLabelTextLayout specimenType{
-        {145, 175}, 26, 20, Font::Medium
+        {145, 175}, 26, 20, Font::Medium, 0, 2, 1
     };
     MedicalLabelTextLayout department{
-        {245, 175}, 26, 19, Font::Small
+        {245, 175}, 26, 19, Font::Small, 0, 2, 1
     };
     MedicalLabelTextLayout patientId{
-        {5, 205}, 20, 14, Font::Medium
+        {5, 205}, 20, 14, Font::Medium, 0, 2, 1
     };
     MedicalLabelTextLayout timestamp{
-        {245, 205}, 18, 11, Font::Small
+        {215, 205}, 18, 11, Font::Small, 0, 2, 1
     };
 };
 

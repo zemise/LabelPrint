@@ -17,6 +17,15 @@ inline const char* mapFont(const std::string& fontName) {
     return zpl::FONT_DEFAULT;
 }
 
+inline bool containsNonAscii(const std::string& text) {
+    for (unsigned char c : text) {
+        if (c > 0x7F) {
+            return true;
+        }
+    }
+    return false;
+}
+
 // Convert labelprint::LabelSettings → zpl::LabelSettings
 inline zpl::LabelSettings convertSettings(const LabelSettings& s, const PrinterProfile& p) {
     zpl::LabelSettings out;
@@ -37,11 +46,21 @@ inline void populate(zpl::ZplLabel& label, const LabelDocument& doc, const Print
     label.setSettings(convertSettings(doc.settings(), profile));
 
     for (const auto& t : doc.texts()) {
-        label.text(t.x, t.y, t.text, t.height, t.width, mapFont(t.fontName));
+        bool useNativeChineseFont =
+            profile.nativeChinese &&
+            !profile.nativeChineseFont.empty() &&
+            containsNonAscii(t.text) &&
+            t.renderMode != TextRenderMode::Bitmap;
+
+        if (useNativeChineseFont) {
+            label.textTtf(t.x, t.y, t.text, t.height, t.width, profile.nativeChineseFont);
+        } else {
+            label.text(t.x, t.y, t.text, t.height, t.width, mapFont(t.fontName));
+        }
     }
 
     for (const auto& b : doc.barcodes()) {
-        label.barcode(b.x, b.y, b.data, b.height, b.narrowWidth, b.printTextBelow);
+        label.barcode(b.x, b.y, b.data, b.height, b.narrowWidth, b.wideRatio, b.printTextBelow);
     }
 
     for (const auto& l : doc.lines()) {

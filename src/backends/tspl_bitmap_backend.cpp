@@ -2,7 +2,6 @@
 #include "detail.h"
 #include "zpl_label.h"
 
-#define NOMINMAX
 #include <windows.h>
 #include <gdiplus.h>
 #include <algorithm>
@@ -181,7 +180,7 @@ void detail::populateTsplBitmap(zpl::ZplLabel& label,
         label.addBox(bx.x, bx.y, bx.width, bx.height, bx.thickness);
     }
     for (const auto& b : doc.barcodes()) {
-        label.barcode(b.x, b.y, b.data, b.height, b.narrowWidth, b.printTextBelow);
+        label.barcode(b.x, b.y, b.data, b.height, b.narrowWidth, b.wideRatio, b.printTextBelow);
     }
 
     // Text elements: per-element strategy

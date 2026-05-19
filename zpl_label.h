@@ -110,7 +110,8 @@ public:
     ZplLabel& textTtf(int x, int y, const std::string& str,
                       int h, int w, const std::string& fontPath);
     ZplLabel& barcode(int x, int y, const std::string& data,
-                      int barHeight = 100, int modW = 2, bool printText = true);
+                      int barHeight = 100, int modW = 2, double ratio = 3.0,
+                      bool printText = true);
 
     // --- settings ---
     void setSettings(const LabelSettings& s) { settings_ = s; }
