@@ -1,4 +1,4 @@
-# API Reference · v1.2.5
+# API Reference · v1.2.6
 
 ## Architecture
 
@@ -703,11 +703,11 @@ WindowsRawTransport().send(job, PrinterConnection{"Xprinter XP-360B #2"});
 // Compile-time version macros
 LABELPRINT_VERSION_MAJOR   // 1
 LABELPRINT_VERSION_MINOR   // 2
-LABELPRINT_VERSION_PATCH   // 5
-LABELPRINT_VERSION_STRING  // "1.2.5"
+LABELPRINT_VERSION_PATCH   // 6
+LABELPRINT_VERSION_STRING  // "1.2.6"
 ```
 
-The version also appears in CMake: `project(LabelPrint VERSION 1.2.5)`.
+The version also appears in CMake: `project(LabelPrint VERSION 1.2.6)`.
 
 ---
 

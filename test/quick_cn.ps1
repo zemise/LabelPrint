@@ -6,6 +6,13 @@ param(
 $ErrorActionPreference = "Stop"
 $root = Split-Path -Parent $PSScriptRoot
 
+Write-Host "=== Build ===" -ForegroundColor Cyan
+Push-Location $root
+cmake --build "$root\out\build\x64-Debug" 2>&1
+Pop-Location
+if ($LASTEXITCODE -ne 0) { throw "Build failed" }
+Write-Host "       OK"
+
 Write-Host "=== Generate Chinese TSPL (C++ TsplGb18030Backend) ===" -ForegroundColor Cyan
 Push-Location $root
 $output = & "$root\out\build\x64-Debug\labelprint_demo.exe" 2>&1

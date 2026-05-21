@@ -328,6 +328,8 @@ ADD_TEST(xprinter_default_print_layout_widens_and_centers_barcode) {
     ASSERT(job.debugText.find("CODEPAGE 54936") != std::string::npos);
     ASSERT(job.debugText.find("BARCODE 36,72,\"128\",75,0,0,3,7,\"008085125\"") != std::string::npos);
     ASSERT(job.debugText.find("TEXT 111,152") != std::string::npos);
+    ASSERT(job.debugText.find("TEXT 5,175,\"3\",0,1,1,\"ABC\"") != std::string::npos);
+    ASSERT(job.debugText.find("TEXT 145,175,\"3\",0,1,1,\"BLOOD\"") != std::string::npos);
     ASSERT(job.debugText.find("\"008085125\"") != std::string::npos);
 }
 

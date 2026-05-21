@@ -107,9 +107,10 @@ int main(int argc, char* argv[]) {
         return 0;
     }
 
-    LabelDocument cnDoc = buildMedicalLabel(buildCnData(), cfg);
-    TsplGb18030Backend gb18030Backend;
-    PrintJob cnJob = gb18030Backend.render(cnDoc, profile);
+    MedicalLabelPrintOptions cnOptions;
+    cnOptions.model = MedicalLabelPrinterModel::XprinterXp360b;
+    cnOptions.quantity = cfg.quantity;
+    PrintJob cnJob = renderMedicalLabel(buildCnData(), cnOptions);
     std::cout << "\n// Chinese TSPL (GB18030) preview\n"
               << cnJob.debugText << std::endl;
     fileTransport.send(cnJob, PrinterConnection{"label_medical_cn_new.prn"});

@@ -1,4 +1,4 @@
-# LabelPrint · v1.2.5
+# LabelPrint · v1.2.6
 
 ![CI](https://github.com/zemise/labelprint/actions/workflows/ci.yml/badge.svg)
 
@@ -125,7 +125,7 @@ target_link_libraries(your_app PRIVATE LabelPrint::labelprint)
 Configure:
 
 ```powershell
-cmake -S . -B build -DCMAKE_PREFIX_PATH=C:\path\to\labelprint-v1.2.5-windows-x64-vs2026
+cmake -S . -B build -DCMAKE_PREFIX_PATH=C:\path\to\labelprint-v1.2.6-windows-x64-vs2026
 cmake --build build --config Release
 ```
 
