@@ -1,4 +1,4 @@
-# LabelPrint · v1.2.0
+# LabelPrint · v1.2.1
 
 ![CI](https://github.com/zemise/labelprint/actions/workflows/ci.yml/badge.svg)
 
@@ -123,7 +123,7 @@ target_link_libraries(your_app PRIVATE LabelPrint::labelprint)
 Configure:
 
 ```powershell
-cmake -S . -B build -DCMAKE_PREFIX_PATH=C:\path\to\labelprint-v1.2.0-windows-x64-vs2026
+cmake -S . -B build -DCMAKE_PREFIX_PATH=C:\path\to\labelprint-v1.2.1-windows-x64-vs2026
 cmake --build build --config Release
 ```
 
@@ -183,7 +183,7 @@ layout.patientName = {{5, 175}, 28, 22, Font::Medium};
 LabelDocument doc = buildMedicalLabel(data, layout);
 ```
 
-The built-in XP-360B auto-print layout uses a wider barcode (`narrowWidth = 3`, `wideRatio = 2.6`) and centers the human-readable barcode value across the label. Zebra keeps the shared default layout unless a custom layout is supplied.
+The built-in XP-360B auto-print layout uses a wider barcode (`narrowWidth = 3`, `wideRatio = 2.6`) and shifts the barcode area slightly left while centering the human-readable barcode value. Zebra keeps the shared default layout unless a custom layout is supplied.
 
 Stable public API:
 

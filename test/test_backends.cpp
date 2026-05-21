@@ -323,8 +323,8 @@ ADD_TEST(xprinter_default_print_layout_widens_and_centers_barcode) {
 
     PrintJob job = renderMedicalLabel(data, options);
 
-    ASSERT(job.debugText.find("BARCODE 66,72,\"128\",75,0,0,3,7,\"008085125\"") != std::string::npos);
-    ASSERT(job.debugText.find("TEXT 141,152") != std::string::npos);
+    ASSERT(job.debugText.find("BARCODE 56,72,\"128\",75,0,0,3,7,\"008085125\"") != std::string::npos);
+    ASSERT(job.debugText.find("TEXT 131,152") != std::string::npos);
     ASSERT(job.debugText.find("\"008085125\"") != std::string::npos);
 }
 

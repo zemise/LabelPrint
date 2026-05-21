@@ -1,4 +1,4 @@
-# API Reference · v1.2.0
+# API Reference · v1.2.1
 
 ## Architecture
 
@@ -609,7 +609,7 @@ LabelDocument doc = buildMedicalLabel(data, layout);
 ```
 
 The default `MedicalLabelLayout` targets 50×30 mm labels at 203 DPI (400×240 dots).
-The built-in XP-360B auto-print path widens the barcode to `narrowWidth = 3`, `wideRatio = 2.6`, and centers `barcodeText` across the label. Zebra ZD888 keeps the shared default layout unless you pass a custom layout.
+The built-in XP-360B auto-print path widens the barcode to `narrowWidth = 3`, `wideRatio = 2.6`, shifts the barcode area slightly left, and centers `barcodeText`. Zebra ZD888 keeps the shared default layout unless you pass a custom layout.
 
 ### Stable API surface
 
@@ -700,11 +700,11 @@ WindowsRawTransport().send(job, PrinterConnection{"Xprinter XP-360B #2"});
 // Compile-time version macros
 LABELPRINT_VERSION_MAJOR   // 1
 LABELPRINT_VERSION_MINOR   // 2
-LABELPRINT_VERSION_PATCH   // 0
-LABELPRINT_VERSION_STRING  // "1.2.0"
+LABELPRINT_VERSION_PATCH   // 1
+LABELPRINT_VERSION_STRING  // "1.2.1"
 ```
 
-The version also appears in CMake: `project(LabelPrint VERSION 1.2.0)`.
+The version also appears in CMake: `project(LabelPrint VERSION 1.2.1)`.
 
 ---
 

@@ -202,10 +202,11 @@ MedicalLabelLayout effectiveLayout(const MedicalLabelPrintOptions& options,
                                    const PrinterProfile& profile) {
     MedicalLabelLayout layout = options.useCustomLayout ? options.layout : MedicalLabelLayout{};
     if (!options.useCustomLayout && model == MedicalLabelPrinterModel::XprinterXp360b) {
+        layout.barcode.pos.x = 56;
         layout.barcode.narrowWidth = 3;
         layout.barcode.wideRatio = 2.6;
         layout.barcodeText.pos.x = 0;
-        layout.barcodeText.maxWidth = layout.settings.width;
+        layout.barcodeText.maxWidth = layout.settings.width - 20;
         layout.barcodeText.align = MedicalLabelTextAlign::Center;
     }
     layout.settings.darkness = profile.darkness;
