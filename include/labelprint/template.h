@@ -28,6 +28,11 @@ struct MedicalLabelPoint {
     int y = 0;
 };
 
+enum class MedicalLabelTextAlign {
+    Left,
+    Center
+};
+
 struct MedicalLabelTextLayout {
     MedicalLabelPoint pos;
     int height = 30;
@@ -36,6 +41,7 @@ struct MedicalLabelTextLayout {
     int maxWidth = 0;       // optional, in dots; 0 means no wrapping
     int lineGap = 2;        // vertical gap between wrapped lines
     int maxLines = 1;       // maximum wrapped lines
+    MedicalLabelTextAlign align = MedicalLabelTextAlign::Left;
 };
 
 struct MedicalLabelBarcodeLayout {
@@ -51,31 +57,31 @@ struct MedicalLabelLayout {
     int rowGap = 30;
 
     MedicalLabelTextLayout sampleNo{
-        {5, 5}, 28, 16, Font::Medium, 0, 2, 1
+        {5, 5}, 28, 16, Font::Medium, 0, 2, 1, MedicalLabelTextAlign::Left
     };
     MedicalLabelTextLayout testItem{
-        {88, 8}, 22, 16, Font::Medium, 290, 2, 2
+        {88, 8}, 22, 16, Font::Medium, 290, 2, 2, MedicalLabelTextAlign::Left
     };
     MedicalLabelBarcodeLayout barcode{
         {66, 72}, 75, 2, 3.0, false
     };
     MedicalLabelTextLayout barcodeText{
-        {142, 152}, 18, 13, Font::Medium, 0, 2, 1
+        {142, 152}, 18, 13, Font::Medium, 0, 2, 1, MedicalLabelTextAlign::Left
     };
     MedicalLabelTextLayout patientName{
-        {5, 175}, 28, 22, Font::Medium, 0, 2, 1
+        {5, 175}, 28, 22, Font::Medium, 0, 2, 1, MedicalLabelTextAlign::Left
     };
     MedicalLabelTextLayout specimenType{
-        {145, 175}, 26, 20, Font::Medium, 0, 2, 1
+        {145, 175}, 26, 20, Font::Medium, 0, 2, 1, MedicalLabelTextAlign::Left
     };
     MedicalLabelTextLayout department{
-        {245, 175}, 26, 19, Font::Small, 0, 2, 1
+        {245, 175}, 26, 19, Font::Small, 0, 2, 1, MedicalLabelTextAlign::Left
     };
     MedicalLabelTextLayout patientId{
-        {5, 205}, 20, 14, Font::Medium, 0, 2, 1
+        {5, 205}, 20, 14, Font::Medium, 0, 2, 1, MedicalLabelTextAlign::Left
     };
     MedicalLabelTextLayout timestamp{
-        {215, 205}, 18, 11, Font::Small, 0, 2, 1
+        {215, 205}, 18, 11, Font::Small, 0, 2, 1, MedicalLabelTextAlign::Left
     };
 };
 

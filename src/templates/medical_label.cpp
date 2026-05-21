@@ -64,9 +64,13 @@ void addText(LabelDocument& doc,
              const std::string& text) {
     auto lines = wrapText(text, layout);
     for (size_t i = 0; i < lines.size(); ++i) {
+        int x = layout.pos.x;
+        if (layout.align == MedicalLabelTextAlign::Center && layout.maxWidth > 0) {
+            int textWidth = static_cast<int>(splitUtf8Chars(lines[i]).size()) * layout.width;
+            x += std::max(0, (layout.maxWidth - textWidth) / 2);
+        }
         int y = layout.pos.y + static_cast<int>(i) * (layout.height + layout.lineGap);
-        doc.addText(layout.pos.x, y, lines[i],
-                    layout.height, layout.width, layout.font);
+        doc.addText(x, y, lines[i], layout.height, layout.width, layout.font);
     }
 }
 

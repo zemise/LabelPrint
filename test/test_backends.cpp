@@ -3,6 +3,7 @@
 #include "labelprint/document.h"
 #include "labelprint/printer_profile.h"
 #include "labelprint/backend.h"
+#include "labelprint/medical_label_print.h"
 #include "labelprint/template.h"
 #include "labelprint/transport.h"
 #include "labelprint/zpl_backend.h"
@@ -305,6 +306,26 @@ ADD_TEST(medical_label_wraps_test_item) {
     ASSERT_EQ(defaultDoc.texts()[0].width, 16);
     ASSERT_EQ(defaultDoc.texts()[1].x, 88);
     ASSERT_EQ(defaultDoc.barcodes()[0].narrowWidth, 2);
+}
+
+ADD_TEST(xprinter_default_print_layout_widens_and_centers_barcode) {
+    MedicalLabelData data;
+    data.sampleNo     = "22";
+    data.testItem     = "CBC";
+    data.barcodeValue = "008085125";
+    data.patientName  = "ABC";
+    data.specimenType = "BLOOD";
+    data.patientId    = "999";
+    data.timestamp    = "2026/1/1";
+
+    MedicalLabelPrintOptions options;
+    options.model = MedicalLabelPrinterModel::XprinterXp360b;
+
+    PrintJob job = renderMedicalLabel(data, options);
+
+    ASSERT(job.debugText.find("BARCODE 66,72,\"128\",75,0,0,3,7,\"008085125\"") != std::string::npos);
+    ASSERT(job.debugText.find("TEXT 141,152") != std::string::npos);
+    ASSERT(job.debugText.find("\"008085125\"") != std::string::npos);
 }
 
 // ---------------------------------------------------------------------------

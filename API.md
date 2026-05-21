@@ -575,6 +575,7 @@ struct MedicalLabelTextLayout {
     int maxWidth = 0;         // max width before wrapping (dots, 0 = no wrap)
     int lineGap = 2;          // vertical gap between wrapped lines (dots)
     int maxLines = 1;         // max number of wrapped lines
+    MedicalLabelTextAlign align = MedicalLabelTextAlign::Left;
 };
 ```
 
@@ -602,12 +603,13 @@ layout.settings.homeY = 5;
 layout.sampleNo = {{5, 5}, 28, 16, Font::Medium};
 layout.testItem = {{88, 8}, 22, 16, Font::Medium, 290, 2, 2};
 layout.barcode = {{66, 72}, 75, 2, 3.0, false};
-layout.barcodeText = {{142, 152}, 18, 13, Font::Medium};
+layout.barcodeText = {{0, 152}, 18, 13, Font::Medium, 400, 2, 1, MedicalLabelTextAlign::Center};
 
 LabelDocument doc = buildMedicalLabel(data, layout);
 ```
 
 The default `MedicalLabelLayout` targets 50×30 mm labels at 203 DPI (400×240 dots).
+The built-in XP-360B auto-print path widens the barcode to `narrowWidth = 3`, `wideRatio = 2.6`, and centers `barcodeText` across the label. Zebra ZD888 keeps the shared default layout unless you pass a custom layout.
 
 ### Stable API surface
 

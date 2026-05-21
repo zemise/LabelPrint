@@ -144,9 +144,9 @@ Test infrastructure established:
 - `test/test_utils.h` — Shared test macros (`ADD_TEST`, `ASSERT`, `ASSERT_EQ`) with inline registry
 - `test/test_main.cpp` — Test runner entry point
 - `test/test_document.cpp` — 10 document model & profile tests
-- `test/test_backends.cpp` — 14 backend output & PrintJob tests
+- `test/test_backends.cpp` — 20 backend output & PrintJob tests
 - `CMakeLists.txt` — `test_runner` CMake target
-- All 27 tests pass
+- All 30 tests pass
 
 ## Suggested next improvements
 

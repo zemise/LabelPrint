@@ -16,7 +16,7 @@ C++ label printing library — printer-independent document model with ZPL/TSPL 
 - **Phase 4 complete:** `TsplBitmapBackend` with GDI+ Chinese text rendering.
 - **Phase 5 complete:** Template API (`MedicalLabelData` + `buildMedicalLabel`).
 - **Phase 6 complete:** Transport layer (`FileTransport`, `WindowsRawTransport`, `Tcp9100Transport`).
-- **Phase 7 complete:** Test infrastructure (`test_runner.exe`), 29 tests covering document model + backend output.
+- **Phase 7 complete:** Test infrastructure (`test_runner.exe`), 30 tests covering document model + backend output.
 - **Phase 8 complete:** High-level medical label print API (`printMedicalLabel`) that resolves printer model and backend internally.
 
 ## Project structure
@@ -55,7 +55,7 @@ test/
   test_utils.h          — Shared test macros (ADD_TEST, ASSERT, ASSERT_EQ)
   test_main.cpp         — Test runner entry point
   test_document.cpp     — Document model & profile tests (10 tests)
-  test_backends.cpp     — Backend output & PrintJob tests (14 tests)
+  test_backends.cpp     — Backend output & PrintJob tests (20 tests)
 zpl_label.h/cpp         — ZPL/TSPL command builder (internal engine)
 main.cpp                — Sample using LabelDocument + PrinterProfile + Backends
 CMakeLists.txt          — CMake build config
@@ -177,10 +177,13 @@ layout.settings.homeX = 5;
 layout.settings.homeY = 5;
 layout.sampleNo = {{5, 5}, 28, 16, Font::Medium};
 layout.barcode = {{66, 72}, 75, 2, 3.0, false};
+layout.barcodeText = {{0, 152}, 18, 13, Font::Medium, 400, 2, 1, MedicalLabelTextAlign::Center};
 layout.patientName = {{5, 175}, 28, 22, Font::Medium};
 
 LabelDocument doc = buildMedicalLabel(data, layout);
 ```
+
+The built-in XP-360B auto-print layout uses a wider barcode (`narrowWidth = 3`, `wideRatio = 2.6`) and centers the human-readable barcode value across the label. Zebra keeps the shared default layout unless a custom layout is supplied.
 
 Stable public API:
 
@@ -276,7 +279,7 @@ powershell -ExecutionPolicy Bypass -File .\RawTSPL.ps1 -PrinterName "Xprinter XP
 | `main.cpp` | C++ sample using backends API |
 | `GenerateLabelTsplCn.ps1` | Chinese bitmap TSPL generator (superseded, kept as reference) |
 | `test/test_utils.h` | Shared test macros and registry |
-| `test/test_main.cpp` | Test runner (29 tests, run with `test_runner.exe`) |
+| `test/test_main.cpp` | Test runner (30 tests, run with `test_runner.exe`) |
 | `RawTSPL.ps1` | RAW print sender via WinSpool |
 | `RawZPL.ps1` | RAW ZPL sender (reference) |
 | `preview_render.py` | Local PIL-based label preview |
@@ -296,7 +299,7 @@ See [ARCHITECTURE.md](ARCHITECTURE.md) for the full 7-phase plan.
 ## Running tests
 
 ```bash
-# Build and run C++ unit tests (29 tests)
+# Build and run C++ unit tests (30 tests)
 cmake --build out/build/x64-Debug --target test_runner
 ./out/build/x64-Debug/test_runner.exe
 ```

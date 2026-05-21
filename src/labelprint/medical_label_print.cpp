@@ -198,8 +198,16 @@ const PrinterProfile& profileFor(MedicalLabelPrinterModel model) {
 }
 
 MedicalLabelLayout effectiveLayout(const MedicalLabelPrintOptions& options,
+                                   MedicalLabelPrinterModel model,
                                    const PrinterProfile& profile) {
     MedicalLabelLayout layout = options.useCustomLayout ? options.layout : MedicalLabelLayout{};
+    if (!options.useCustomLayout && model == MedicalLabelPrinterModel::XprinterXp360b) {
+        layout.barcode.narrowWidth = 3;
+        layout.barcode.wideRatio = 2.6;
+        layout.barcodeText.pos.x = 0;
+        layout.barcodeText.maxWidth = layout.settings.width;
+        layout.barcodeText.align = MedicalLabelTextAlign::Center;
+    }
     layout.settings.darkness = profile.darkness;
     layout.settings.printSpeed = profile.speed;
     if (options.quantity > 0) {
@@ -259,7 +267,7 @@ PrintJob renderMedicalLabel(const MedicalLabelData& data,
                                                                  ? options.fallbackModel
                                                                  : options.model);
     const PrinterProfile& profile = profileFor(model);
-    const MedicalLabelLayout layout = effectiveLayout(options, profile);
+    const MedicalLabelLayout layout = effectiveLayout(options, model, profile);
     LabelDocument doc = buildMedicalLabel(data, layout);
     if (resolvedModel) {
         *resolvedModel = model;
@@ -276,7 +284,7 @@ MedicalLabelPrintResult printMedicalLabel(const std::string& printerName,
 
     const MedicalLabelPrinterModel model = resolveModel(printerName, options);
     const PrinterProfile& profile = profileFor(model);
-    const MedicalLabelLayout layout = effectiveLayout(options, profile);
+    const MedicalLabelLayout layout = effectiveLayout(options, model, profile);
     LabelDocument doc = buildMedicalLabel(data, layout);
     PrintJob job = renderWithModel(doc, profile, model);
 
