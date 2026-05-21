@@ -1,4 +1,4 @@
-# API Reference · v1.2.1
+# API Reference · v1.2.4
 
 ## Architecture
 
@@ -107,7 +107,7 @@ MedicalLabelPrintResult result =
     printMedicalLabel("Xprinter XP-360B #2", data, options);
 ```
 
-`MedicalLabelPrinterModel::Auto` reads Windows printer metadata such as driver, port, processor, comment, and display name. It automatically selects `Xprinter XP-360B` with `TsplBitmapBackend` or `Zebra ZD888` with `ZplBackend` when possible. If the printer cannot be identified, `fallbackModel` is used and defaults to `XprinterXp360b`.
+`MedicalLabelPrinterModel::Auto` reads Windows printer metadata such as driver, port, processor, comment, and display name. It automatically selects `Xprinter XP-360B` with `TsplGb18030Backend` or `Zebra ZD888` with `ZplBackend` when possible. If the printer cannot be identified, `fallbackModel` is used and defaults to `XprinterXp360b`.
 
 Windows applications can call the `std::wstring` overload when the printer name may contain Chinese or other non-ANSI characters:
 
@@ -412,7 +412,7 @@ Rendered output from a backend.
 
 ```cpp
 struct PrintJob {
-    std::string format;              // "zpl", "tspl", "tspl-bitmap"
+    std::string format;              // "zpl", "tspl", "tspl-gb18030", ...
     std::vector<uint8_t> data;       // raw bytes for the printer
     std::string debugText;           // human-readable form
 
@@ -421,7 +421,7 @@ struct PrintJob {
 };
 ```
 
-`asText()` works for `"zpl"` and `"tspl"` formats. For `"tspl-bitmap"`, use `debugText` to inspect the generated commands.
+`asText()` works for `"zpl"` and ASCII `"tspl"` formats. For binary-capable formats such as `"tspl-gb18030"` and `"tspl-bitmap"`, use `debugText` to inspect the generated commands.
 
 ### IPrinterBackend
 
@@ -440,13 +440,15 @@ public:
 |---|---|---|---|
 | `ZplBackend` | `labelprint/zpl_backend.h` | `"zpl"` | No (CI28 + built-in font) |
 | `TsplBackend` | `labelprint/tspl_backend.h` | `"tspl"` | ASCII only |
+| `TsplGb18030Backend` | `labelprint/tspl_gb18030_backend.h` | `"tspl-gb18030"` | Yes (`CODEPAGE 54936` + `TSS24.BF2`) |
 | `TsplBitmapBackend` | `labelprint/tspl_bitmap_backend.h` | `"tspl-bitmap"` | Yes (CJK → BITMAP) |
 
 **Choosing a backend:**
 
 ```
 ASCII text     → TsplBackend (fast, clean output)
-Chinese text   -> TsplBitmapBackend for XP-360B, native ZPL font for verified ZD888 profiles
+Chinese text   -> TsplGb18030Backend for XP-360B, native ZPL font for verified ZD888 profiles
+Fallback CJK   -> TsplBitmapBackend when native TSPL Chinese fonts are unavailable
 Zebra printer  → ZplBackend (ZPL output)
 ```
 
@@ -620,6 +622,7 @@ These names are kept stable for consumers:
 - `buildMedicalLabel`
 - `MedicalLabelPrintOptions`
 - `printMedicalLabel`
+- `TsplGb18030Backend`
 - `TsplBitmapBackend`
 - `WindowsRawTransport`
 
@@ -644,7 +647,7 @@ FileTransport().send(job, PrinterConnection{"label.zpl"});
 #include "labelprint/labelprint.h"
 
 LabelDocument doc = buildMedicalLabel(data, cfg);
-TsplBitmapBackend backend;
+TsplGb18030Backend backend;
 PrintJob job = backend.render(doc, PrinterProfiles::xprinter_xp360b());
 WindowsRawTransport().send(job, PrinterConnection{"Xprinter XP-360B #2"});
 ```
@@ -700,11 +703,11 @@ WindowsRawTransport().send(job, PrinterConnection{"Xprinter XP-360B #2"});
 // Compile-time version macros
 LABELPRINT_VERSION_MAJOR   // 1
 LABELPRINT_VERSION_MINOR   // 2
-LABELPRINT_VERSION_PATCH   // 1
-LABELPRINT_VERSION_STRING  // "1.2.1"
+LABELPRINT_VERSION_PATCH   // 4
+LABELPRINT_VERSION_STRING  // "1.2.4"
 ```
 
-The version also appears in CMake: `project(LabelPrint VERSION 1.2.1)`.
+The version also appears in CMake: `project(LabelPrint VERSION 1.2.4)`.
 
 ---
 

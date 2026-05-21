@@ -87,7 +87,9 @@ ADD_TEST(printer_profile_xp360b) {
     ASSERT_EQ(p.dpi, 203);
     ASSERT(p.language == PrinterLanguage::TSPL);
     ASSERT_EQ(p.bitmapWhiteIsOne, true);
-    ASSERT_EQ(p.nativeChinese, false);
+    ASSERT_EQ(p.nativeChinese, true);
+    ASSERT_EQ(p.nativeChineseFont, "TSS24.BF2");
+    ASSERT_EQ(p.nativeChineseCodepage, "54936");
 }
 
 ADD_TEST(printer_profile_zd888) {

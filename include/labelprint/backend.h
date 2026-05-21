@@ -12,7 +12,7 @@ namespace labelprint {
 // PrintJob — backend render output
 // ---------------------------------------------------------------------------
 struct PrintJob {
-    std::string format;             // "zpl", "tspl", "tspl-bitmap"
+    std::string format;             // "zpl", "tspl", "tspl-gb18030", ...
     std::vector<uint8_t> data;      // raw bytes ready for transport
     std::string debugText;          // human-readable form (optional)
 

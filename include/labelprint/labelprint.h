@@ -14,6 +14,7 @@
 #include "labelprint/backend.h"
 #include "labelprint/zpl_backend.h"
 #include "labelprint/tspl_backend.h"
+#include "labelprint/tspl_gb18030_backend.h"
 #include "labelprint/tspl_bitmap_backend.h"
 
 // Template API

@@ -3,6 +3,7 @@
 #include "labelprint/printer_profile.h"
 #include "labelprint/transport.h"
 #include "labelprint/tspl_bitmap_backend.h"
+#include "labelprint/tspl_gb18030_backend.h"
 #include "labelprint/zpl_backend.h"
 
 #include <algorithm>
@@ -202,11 +203,11 @@ MedicalLabelLayout effectiveLayout(const MedicalLabelPrintOptions& options,
                                    const PrinterProfile& profile) {
     MedicalLabelLayout layout = options.useCustomLayout ? options.layout : MedicalLabelLayout{};
     if (!options.useCustomLayout && model == MedicalLabelPrinterModel::XprinterXp360b) {
-        layout.barcode.pos.x = 56;
+        layout.barcode.pos.x = 36;
         layout.barcode.narrowWidth = 3;
         layout.barcode.wideRatio = 2.6;
         layout.barcodeText.pos.x = 0;
-        layout.barcodeText.maxWidth = layout.settings.width - 20;
+        layout.barcodeText.maxWidth = layout.settings.width - 60;
         layout.barcodeText.align = MedicalLabelTextAlign::Center;
     }
     layout.settings.darkness = profile.darkness;
@@ -225,7 +226,7 @@ PrintJob renderWithModel(const LabelDocument& doc,
         return backend.render(doc, profile);
     }
 
-    TsplBitmapBackend backend;
+    TsplGb18030Backend backend;
     return backend.render(doc, profile);
 }
 

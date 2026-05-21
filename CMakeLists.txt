@@ -4,7 +4,7 @@ if(POLICY CMP0091)
     cmake_policy(SET CMP0091 NEW)
 endif()
 
-project(LabelPrint VERSION 1.2.1 LANGUAGES CXX)
+project(LabelPrint VERSION 1.2.4 LANGUAGES CXX)
 
 include(GNUInstallDirs)
 include(CMakePackageConfigHelpers)
@@ -29,6 +29,7 @@ add_library(labelprint STATIC
     src/labelprint/printer_profile.cpp
     src/backends/zpl_backend.cpp
     src/backends/tspl_backend.cpp
+    src/backends/tspl_gb18030_backend.cpp
     src/backends/tspl_bitmap_backend.cpp
     src/labelprint/medical_label_print.cpp
     src/templates/medical_label.cpp

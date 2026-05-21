@@ -44,6 +44,7 @@ struct PrinterProfile {
     // Recommended text strategy for this printer
     TextStrategy textStrategy = TextStrategy::Auto;
     std::string nativeChineseFont; // e.g. "E:CSONG.TTF" for ZPL ^A@
+    std::string nativeChineseCodepage; // e.g. "54936" for TSPL GB18030
 
     // --- Physical defaults ---
     int gapMm       = 2;    // label gap

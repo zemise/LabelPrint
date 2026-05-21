@@ -6,7 +6,7 @@ param(
 $ErrorActionPreference = "Stop"
 $root = Split-Path -Parent $PSScriptRoot
 
-Write-Host "=== Generate Chinese TSPL (C++ TsplBitmapBackend) ===" -ForegroundColor Cyan
+Write-Host "=== Generate Chinese TSPL (C++ TsplGb18030Backend) ===" -ForegroundColor Cyan
 Push-Location $root
 $output = & "$root\out\build\x64-Debug\labelprint_demo.exe" 2>&1
 Pop-Location

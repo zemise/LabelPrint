@@ -9,6 +9,7 @@
 #include "labelprint/zpl_backend.h"
 #include "labelprint/tspl_backend.h"
 #include "labelprint/tspl_bitmap_backend.h"
+#include <algorithm>
 #include <string>
 
 using namespace labelprint;
@@ -323,9 +324,37 @@ ADD_TEST(xprinter_default_print_layout_widens_and_centers_barcode) {
 
     PrintJob job = renderMedicalLabel(data, options);
 
-    ASSERT(job.debugText.find("BARCODE 56,72,\"128\",75,0,0,3,7,\"008085125\"") != std::string::npos);
-    ASSERT(job.debugText.find("TEXT 131,152") != std::string::npos);
+    ASSERT_EQ(job.format, "tspl-gb18030");
+    ASSERT(job.debugText.find("CODEPAGE 54936") != std::string::npos);
+    ASSERT(job.debugText.find("BARCODE 36,72,\"128\",75,0,0,3,7,\"008085125\"") != std::string::npos);
+    ASSERT(job.debugText.find("TEXT 111,152") != std::string::npos);
     ASSERT(job.debugText.find("\"008085125\"") != std::string::npos);
+}
+
+ADD_TEST(xprinter_gb18030_backend_encodes_chinese_text) {
+    MedicalLabelData data;
+    data.sampleNo     = "22";
+    data.testItem     = u8"血常规";
+    data.barcodeValue = "123";
+    data.patientName  = u8"中文测试";
+    data.specimenType = u8"全血";
+    data.patientId    = "999";
+    data.timestamp    = "2026/1/1";
+
+    MedicalLabelPrintOptions options;
+    options.model = MedicalLabelPrinterModel::XprinterXp360b;
+
+    PrintJob job = renderMedicalLabel(data, options);
+
+    const std::vector<uint8_t> gb18030ChineseTest = {
+        0xD6, 0xD0, 0xCE, 0xC4, 0xB2, 0xE2, 0xCA, 0xD4
+    };
+    const auto found = std::search(job.data.begin(), job.data.end(),
+                                   gb18030ChineseTest.begin(),
+                                   gb18030ChineseTest.end());
+
+    ASSERT_EQ(job.format, "tspl-gb18030");
+    ASSERT(found != job.data.end());
 }
 
 // ---------------------------------------------------------------------------

@@ -72,17 +72,17 @@ def render_label(output_path, scale=SCALE):
     draw = ImageDraw.Draw(img)
     s = scale
 
-    # Row 1 — 样本号 (加大)
-    draw_text(draw, 5, 5, "22", 36, s)
+    # Row 1 — 样本号
+    draw_text(draw, 5, 5, "22", 28, s)
 
     # Row 2 — 组合项目
-    draw_text(draw, 5, 44, "血常规（迈瑞流水线）", 24, s)
+    draw_text(draw, 88, 8, "血常规（迈瑞流水线）", 22, s)
 
     # Row 3 — 条码
-    draw_barcode_img(draw, 5, 67, "008085125", 75, 3, s)
+    draw_barcode_img(draw, 36, 72, "008085125", 75, 3, s)
 
     # Row 4 — 条码号
-    draw_text(draw, 135, 152, "008085125", 18, s)
+    draw_text(draw, 111, 152, "008085125", 18, s)
 
     # Row 5 — 姓名(加大) / 标本 / 科室 (三栏)
     draw_text(draw, 5,   175, "廖明",     26, s)

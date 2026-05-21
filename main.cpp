@@ -108,9 +108,9 @@ int main(int argc, char* argv[]) {
     }
 
     LabelDocument cnDoc = buildMedicalLabel(buildCnData(), cfg);
-    TsplBitmapBackend bitmapBackend;
-    PrintJob cnJob = bitmapBackend.render(cnDoc, profile);
-    std::cout << "\n// Chinese TSPL (bitmap) preview\n"
+    TsplGb18030Backend gb18030Backend;
+    PrintJob cnJob = gb18030Backend.render(cnDoc, profile);
+    std::cout << "\n// Chinese TSPL (GB18030) preview\n"
               << cnJob.debugText << std::endl;
     fileTransport.send(cnJob, PrinterConnection{"label_medical_cn_new.prn"});
     std::cout << "// Chinese TSPL saved to label_medical_cn_new.prn" << std::endl;

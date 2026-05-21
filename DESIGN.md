@@ -19,7 +19,7 @@ Generate and print a `50 mm x 30 mm` medical barcode label that includes:
 The original project direction used `ZPL`, but the connected printer in this workspace is an `Xprinter XP-360B`, and the verified working path is now:
 
 - `TSPL` for printer control and barcode output
-- `TSPL BITMAP` for Chinese text
+- native TSPL Chinese text through `GB18030` + `TSS24.BF2`, with `TSPL BITMAP` retained as fallback
 
 This split is intentional:
 
@@ -144,9 +144,9 @@ Test infrastructure established:
 - `test/test_utils.h` — Shared test macros (`ADD_TEST`, `ASSERT`, `ASSERT_EQ`) with inline registry
 - `test/test_main.cpp` — Test runner entry point
 - `test/test_document.cpp` — 10 document model & profile tests
-- `test/test_backends.cpp` — 20 backend output & PrintJob tests
+- `test/test_backends.cpp` — 21 backend output & PrintJob tests
 - `CMakeLists.txt` — `test_runner` CMake target
-- All 30 tests pass
+- All 31 tests pass
 
 ## Suggested next improvements
 

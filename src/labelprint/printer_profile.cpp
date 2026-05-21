@@ -11,9 +11,11 @@ const PrinterProfile& PrinterProfiles::xprinter_xp360b() {
         p.maxWidth         = 812;
         p.maxHeight        = 1200;
         p.nativeBarcode    = true;
-        p.nativeChinese    = false;
+        p.nativeChinese    = true;
         p.bitmapGraphics   = true;
         p.textStrategy     = TextStrategy::Auto;
+        p.nativeChineseFont = "TSS24.BF2";
+        p.nativeChineseCodepage = "54936";
         p.gapMm            = 2;
         p.gapOffsetMm      = 0;
         p.darkness         = 25;   // ZPL range (0-30); maps to TSPL DENSITY=12
