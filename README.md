@@ -1,4 +1,4 @@
-# LabelPrint · v1.2.4
+# LabelPrint · v1.2.5
 
 ![CI](https://github.com/zemise/labelprint/actions/workflows/ci.yml/badge.svg)
 
@@ -125,7 +125,7 @@ target_link_libraries(your_app PRIVATE LabelPrint::labelprint)
 Configure:
 
 ```powershell
-cmake -S . -B build -DCMAKE_PREFIX_PATH=C:\path\to\labelprint-v1.2.4-windows-x64-vs2026
+cmake -S . -B build -DCMAKE_PREFIX_PATH=C:\path\to\labelprint-v1.2.5-windows-x64-vs2026
 cmake --build build --config Release
 ```
 
@@ -180,12 +180,12 @@ layout.settings.homeY = 5;
 layout.sampleNo = {{5, 5}, 28, 16, Font::Medium};
 layout.barcode = {{66, 72}, 75, 2, 3.0, false};
 layout.barcodeText = {{0, 152}, 18, 13, Font::Medium, 400, 2, 1, MedicalLabelTextAlign::Center};
-layout.patientName = {{5, 175}, 28, 22, Font::Medium};
+layout.patientName = {{5, 175}, 14, 11, Font::Medium};
 
 LabelDocument doc = buildMedicalLabel(data, layout);
 ```
 
-The built-in XP-360B auto-print layout uses a wider barcode (`narrowWidth = 3`, `wideRatio = 2.6`) and shifts the barcode area slightly left while centering the human-readable barcode value. Zebra keeps the shared default layout unless a custom layout is supplied.
+The built-in XP-360B auto-print layout uses a wider barcode (`narrowWidth = 3`, `wideRatio = 2.6`), shifts the barcode area slightly left, centers the human-readable barcode value, and uses compact lower-row text for patient/specimen/department fields. Zebra keeps the shared default layout unless a custom layout is supplied.
 
 Stable public API:
 

@@ -76,7 +76,7 @@ def render_label(output_path, scale=SCALE):
     draw_text(draw, 5, 5, "22", 28, s)
 
     # Row 2 — 组合项目
-    draw_text(draw, 88, 8, "血常规（迈瑞流水线）", 22, s)
+    draw_text(draw, 88, 8, "血常规（迈瑞流水线）", 18, s)
 
     # Row 3 — 条码
     draw_barcode_img(draw, 36, 72, "008085125", 75, 3, s)
@@ -84,14 +84,14 @@ def render_label(output_path, scale=SCALE):
     # Row 4 — 条码号
     draw_text(draw, 111, 152, "008085125", 18, s)
 
-    # Row 5 — 姓名(加大) / 标本 / 科室 (三栏)
-    draw_text(draw, 5,   175, "廖明",     26, s)
-    draw_text(draw, 145, 175, "全血",     26, s)
-    draw_text(draw, 245, 175, "心血管内科二区", 20, s)
+    # Row 5 — 姓名 / 标本 / 科室 (三栏)
+    draw_text(draw, 5,   175, "廖明",     14, s)
+    draw_text(draw, 145, 175, "全血",     13, s)
+    draw_text(draw, 245, 175, "心血管内科二区", 13, s)
 
     # Row 6 — 病人号 / 日期 (双栏)
-    draw_text(draw, 5,   205, "202629988",      20, s)
-    draw_text(draw, 245, 205, "2026/5/15 9:24", 18, s)
+    draw_text(draw, 5,   205, "202629988",      16, s)
+    draw_text(draw, 245, 205, "2026/5/15 9:24", 15, s)
 
     img.save(output_path)
     print(f"[preview] saved {w}×{h} px → {output_path}")
