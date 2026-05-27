@@ -1,4 +1,4 @@
-# API Reference · v1.2.6
+# API Reference · v1.2.8
 
 ## Architecture
 
@@ -107,7 +107,7 @@ MedicalLabelPrintResult result =
     printMedicalLabel("Xprinter XP-360B #2", data, options);
 ```
 
-`MedicalLabelPrinterModel::Auto` reads Windows printer metadata such as driver, port, processor, comment, and display name. It automatically selects `Xprinter XP-360B` with `TsplGb18030Backend` or `Zebra ZD888` with `ZplBackend` when possible. If the printer cannot be identified, `fallbackModel` is used and defaults to `XprinterXp360b`.
+`MedicalLabelPrinterModel::Auto` reads Windows printer metadata such as driver, port, processor, comment, and display name. It automatically selects `Xprinter XP-360B` with `TsplGb18030Backend`, `Zebra ZD888` with `ZplBackend`, or `Godex G500U` with the GZPL/ZPL-compatible `ZplBackend` path when possible. If the printer cannot be identified, `fallbackModel` is used and defaults to `XprinterXp360b`.
 
 Windows applications can call the `std::wstring` overload when the printer name may contain Chinese or other non-ANSI characters:
 
@@ -398,6 +398,7 @@ struct PrinterProfile {
 ```cpp
 const PrinterProfile& PrinterProfiles::xprinter_xp360b();  // 203 DPI TSPL
 const PrinterProfile& PrinterProfiles::zebra_zd888();      // 203 DPI ZPL
+const PrinterProfile& PrinterProfiles::godex_g500u();       // 203 DPI GZPL/ZPL-compatible
 ```
 
 Always use these factories. They return `const&` to a static instance — safe to hold by reference.
@@ -603,7 +604,7 @@ layout.settings.homeX = 5;
 layout.settings.homeY = 5;
 
 layout.sampleNo = {{5, 5}, 28, 16, Font::Medium};
-layout.testItem = {{88, 8}, 18, 13, Font::Medium, 290, 2, 2};
+layout.testItem = {{88, 8}, 22, 16, Font::Medium, 290, 2, 2};
 layout.barcode = {{66, 72}, 75, 2, 3.0, false};
 layout.barcodeText = {{0, 152}, 18, 13, Font::Medium, 400, 2, 1, MedicalLabelTextAlign::Center};
 
@@ -611,7 +612,7 @@ LabelDocument doc = buildMedicalLabel(data, layout);
 ```
 
 The default `MedicalLabelLayout` targets 50×30 mm labels at 203 DPI (400×240 dots).
-The built-in XP-360B auto-print path widens the barcode to `narrowWidth = 3`, `wideRatio = 2.6`, shifts the barcode area slightly left, centers `barcodeText`, and uses compact lower-row text. Zebra ZD888 keeps the shared default layout unless you pass a custom layout.
+The built-in XP-360B auto-print path widens the barcode to `narrowWidth = 3`, `wideRatio = 2.6`, shifts the barcode area slightly left, centers `barcodeText`, and uses compact lower-row text. Zebra ZD888 has a separate enlarged-text layout unless you pass a custom layout. Godex G500U uses the standard medical layout through the ZPL-compatible backend; Chinese font mapping for GZPL still needs device validation.
 
 ### Stable API surface
 
@@ -703,11 +704,11 @@ WindowsRawTransport().send(job, PrinterConnection{"Xprinter XP-360B #2"});
 // Compile-time version macros
 LABELPRINT_VERSION_MAJOR   // 1
 LABELPRINT_VERSION_MINOR   // 2
-LABELPRINT_VERSION_PATCH   // 6
-LABELPRINT_VERSION_STRING  // "1.2.6"
+LABELPRINT_VERSION_PATCH   // 7
+LABELPRINT_VERSION_STRING  // "1.2.8"
 ```
 
-The version also appears in CMake: `project(LabelPrint VERSION 1.2.6)`.
+The version also appears in CMake: `project(LabelPrint VERSION 1.2.8)`.
 
 ---
 

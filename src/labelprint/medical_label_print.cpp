@@ -140,6 +140,9 @@ void appendWindowsPrinterInfo(const std::wstring& printerName, std::wstring& pro
 
 MedicalLabelPrinterModel modelFromText(const std::string& text) {
     const std::string probe = lowerAscii(text);
+    if (containsAny(probe, {"godex", "g500u", "g500-u", "g500", "g-500", "gzpl"})) {
+        return MedicalLabelPrinterModel::GodexG500u;
+    }
     if (containsAny(probe, {"zebra", "zd888", "zd-888", "zdesigner", " zpl", "zpl ", "zpl-"})) {
         return MedicalLabelPrinterModel::ZebraZd888;
     }
@@ -151,6 +154,9 @@ MedicalLabelPrinterModel modelFromText(const std::string& text) {
 
 MedicalLabelPrinterModel modelFromText(const std::wstring& text) {
     const std::wstring probe = lowerWide(text);
+    if (containsAny(probe, {L"godex", L"g500u", L"g500-u", L"g500", L"g-500", L"gzpl"})) {
+        return MedicalLabelPrinterModel::GodexG500u;
+    }
     if (containsAny(probe, {L"zebra", L"zd888", L"zd-888", L"zdesigner", L" zpl", L"zpl ", L"zpl-"})) {
         return MedicalLabelPrinterModel::ZebraZd888;
     }
@@ -187,6 +193,8 @@ MedicalLabelPrinterModel resolveModel(const std::string& printerName,
 
 const PrinterProfile& profileFor(MedicalLabelPrinterModel model) {
     switch (model) {
+    case MedicalLabelPrinterModel::GodexG500u:
+        return PrinterProfiles::godex_g500u();
     case MedicalLabelPrinterModel::ZebraZd888:
         return PrinterProfiles::zebra_zd888();
     case MedicalLabelPrinterModel::XprinterXp360b:
@@ -209,6 +217,35 @@ MedicalLabelLayout effectiveLayout(const MedicalLabelPrintOptions& options,
         layout.barcodeText.pos.x = 0;
         layout.barcodeText.maxWidth = layout.settings.width - 60;
         layout.barcodeText.align = MedicalLabelTextAlign::Center;
+        layout.testItem.height = 18;
+        layout.testItem.width = 13;
+        layout.patientName.height = 14;
+        layout.patientName.width = 11;
+        layout.specimenType.height = 13;
+        layout.specimenType.width = 10;
+        layout.department.height = 13;
+        layout.department.width = 10;
+        layout.patientId.height = 16;
+        layout.patientId.width = 11;
+        layout.timestamp.height = 15;
+        layout.timestamp.width = 9;
+    } else if (!options.useCustomLayout && model == MedicalLabelPrinterModel::ZebraZd888) {
+        layout.sampleNo.height = 32;
+        layout.sampleNo.width = 18;
+        layout.testItem.height = 26;
+        layout.testItem.width = 18;
+        layout.barcodeText.height = 20;
+        layout.barcodeText.width = 14;
+        layout.patientName.height = 32;
+        layout.patientName.width = 24;
+        layout.specimenType.height = 30;
+        layout.specimenType.width = 22;
+        layout.department.height = 28;
+        layout.department.width = 20;
+        layout.patientId.height = 22;
+        layout.patientId.width = 16;
+        layout.timestamp.height = 20;
+        layout.timestamp.width = 12;
     }
     layout.settings.darkness = profile.darkness;
     layout.settings.printSpeed = profile.speed;
@@ -221,7 +258,8 @@ MedicalLabelLayout effectiveLayout(const MedicalLabelPrintOptions& options,
 PrintJob renderWithModel(const LabelDocument& doc,
                          const PrinterProfile& profile,
                          MedicalLabelPrinterModel model) {
-    if (model == MedicalLabelPrinterModel::ZebraZd888) {
+    if (model == MedicalLabelPrinterModel::ZebraZd888 ||
+        model == MedicalLabelPrinterModel::GodexG500u) {
         ZplBackend backend;
         return backend.render(doc, profile);
     }
@@ -242,6 +280,8 @@ std::string to_string(MedicalLabelPrinterModel model) {
         return "xprinter-xp360b";
     case MedicalLabelPrinterModel::ZebraZd888:
         return "zebra-zd888";
+    case MedicalLabelPrinterModel::GodexG500u:
+        return "godex-g500u";
     }
     return "unknown";
 }

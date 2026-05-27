@@ -53,4 +53,28 @@ const PrinterProfile& PrinterProfiles::zebra_zd888() {
     return p;
 }
 
+const PrinterProfile& PrinterProfiles::godex_g500u() {
+    static const PrinterProfile p = [] {
+        PrinterProfile p;
+        p.name             = "Godex G500U";
+        p.language         = PrinterLanguage::ZPL; // GZPL-compatible command path
+        p.dpi              = 203;
+        p.maxWidth         = 864;   // 108 mm * 8 dots/mm
+        p.maxHeight        = 13816; // 1727 mm * 8 dots/mm
+        p.nativeBarcode    = true;
+        p.nativeChinese    = false; // Brochure lists Asian fonts, but no verified GZPL font name.
+        p.bitmapGraphics   = true;
+        p.textStrategy     = TextStrategy::Auto;
+        p.gapMm            = 2;
+        p.gapOffsetMm      = 0;
+        p.darkness         = 25;
+        p.speed            = 5;
+        p.homeX            = 0;
+        p.homeY            = 0;
+        p.bitmapWhiteIsOne = false;
+        return p;
+    }();
+    return p;
+}
+
 } // namespace labelprint

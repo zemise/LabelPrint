@@ -90,7 +90,7 @@ Printer-independent document model extracted:
 Printer profiles introduced:
 
 - `include/labelprint/printer_profile.h` — `PrinterProfile` struct, `PrinterLanguage`/`TextStrategy` enums
-- `src/labelprint/printer_profile.cpp` — Built-in `xprinter_xp360b()` and `zebra_zd888()` factories
+- `src/labelprint/printer_profile.cpp` — Built-in `xprinter_xp360b()`, `zebra_zd888()`, and `godex_g500u()` factories
 - DPI parameterized: `dotsToMm(dots, dpi)`, `dotsToTsplScale(dots, dpi)`
 - `main.cpp` derives settings from profile; BITMAP padding bug fixed in `GenerateLabelTsplCn.ps1`
 
@@ -143,10 +143,10 @@ Test infrastructure established:
 
 - `test/test_utils.h` — Shared test macros (`ADD_TEST`, `ASSERT`, `ASSERT_EQ`) with inline registry
 - `test/test_main.cpp` — Test runner entry point
-- `test/test_document.cpp` — 10 document model & profile tests
-- `test/test_backends.cpp` — 21 backend output & PrintJob tests
+- `test/test_document.cpp` — 11 document model & profile tests
+- `test/test_backends.cpp` — 23 backend output & PrintJob tests
 - `CMakeLists.txt` — `test_runner` CMake target
-- All 31 tests pass
+- All 34 tests pass
 
 ## Suggested next improvements
 

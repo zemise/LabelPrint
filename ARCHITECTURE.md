@@ -523,7 +523,7 @@ transport.send(job, PrinterConnection{"Xprinter XP-360B #2"});
 交付物：
 
 - [x] `PrinterProfile` → `include/labelprint/printer_profile.h`
-- [x] 内置档案定义 → `PrinterProfiles::xprinter_xp360b()`, `PrinterProfiles::zebra_zd888()`
+- [x] 内置档案定义 → `PrinterProfiles::xprinter_xp360b()`, `PrinterProfiles::zebra_zd888()`, `PrinterProfiles::godex_g500u()`
 - [x] 能力标记 → `nativeChinese`, `bitmapWhiteIsOne`, `textStrategy` 等字段
 - [x] DPI 参数化 → `dotsToMm(dots, dpi)`, `dotsToTsplScale(dots, dpi)`
 

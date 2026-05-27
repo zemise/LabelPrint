@@ -60,7 +60,7 @@ struct MedicalLabelLayout {
         {5, 5}, 28, 16, Font::Medium, 0, 2, 1, MedicalLabelTextAlign::Left
     };
     MedicalLabelTextLayout testItem{
-        {88, 8}, 18, 13, Font::Medium, 290, 2, 2, MedicalLabelTextAlign::Left
+        {88, 8}, 22, 16, Font::Medium, 290, 2, 2, MedicalLabelTextAlign::Left
     };
     MedicalLabelBarcodeLayout barcode{
         {66, 72}, 75, 2, 3.0, false
@@ -69,19 +69,19 @@ struct MedicalLabelLayout {
         {142, 152}, 18, 13, Font::Medium, 0, 2, 1, MedicalLabelTextAlign::Left
     };
     MedicalLabelTextLayout patientName{
-        {5, 175}, 14, 11, Font::Medium, 0, 2, 1, MedicalLabelTextAlign::Left
+        {5, 175}, 28, 22, Font::Medium, 0, 2, 1, MedicalLabelTextAlign::Left
     };
     MedicalLabelTextLayout specimenType{
-        {145, 175}, 13, 10, Font::Medium, 0, 2, 1, MedicalLabelTextAlign::Left
+        {145, 175}, 26, 20, Font::Medium, 0, 2, 1, MedicalLabelTextAlign::Left
     };
     MedicalLabelTextLayout department{
-        {245, 175}, 13, 10, Font::Small, 0, 2, 1, MedicalLabelTextAlign::Left
+        {245, 175}, 26, 19, Font::Small, 0, 2, 1, MedicalLabelTextAlign::Left
     };
     MedicalLabelTextLayout patientId{
-        {5, 205}, 16, 11, Font::Medium, 0, 2, 1, MedicalLabelTextAlign::Left
+        {5, 205}, 20, 14, Font::Medium, 0, 2, 1, MedicalLabelTextAlign::Left
     };
     MedicalLabelTextLayout timestamp{
-        {215, 205}, 15, 9, Font::Small, 0, 2, 1, MedicalLabelTextAlign::Left
+        {215, 205}, 18, 11, Font::Small, 0, 2, 1, MedicalLabelTextAlign::Left
     };
 };
 

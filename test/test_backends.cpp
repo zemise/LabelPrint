@@ -305,7 +305,11 @@ ADD_TEST(medical_label_wraps_test_item) {
 
     ASSERT_EQ(defaultDoc.texts()[0].height, 28);
     ASSERT_EQ(defaultDoc.texts()[0].width, 16);
+    ASSERT_EQ(defaultDoc.texts()[1].height, 22);
+    ASSERT_EQ(defaultDoc.texts()[1].width, 16);
     ASSERT_EQ(defaultDoc.texts()[1].x, 88);
+    ASSERT_EQ(defaultDoc.texts()[3].height, 28);
+    ASSERT_EQ(defaultDoc.texts()[3].width, 22);
     ASSERT_EQ(defaultDoc.barcodes()[0].narrowWidth, 2);
 }
 
@@ -357,6 +361,53 @@ ADD_TEST(xprinter_gb18030_backend_encodes_chinese_text) {
 
     ASSERT_EQ(job.format, "tspl-gb18030");
     ASSERT(found != job.data.end());
+}
+
+ADD_TEST(zebra_default_print_layout_uses_larger_text) {
+    MedicalLabelData data;
+    data.sampleNo     = "22";
+    data.testItem     = "CBC";
+    data.barcodeValue = "008085125";
+    data.patientName  = "ABC";
+    data.specimenType = "BLOOD";
+    data.patientId    = "999";
+    data.timestamp    = "2026/1/1";
+
+    MedicalLabelPrintOptions options;
+    options.model = MedicalLabelPrinterModel::ZebraZd888;
+
+    PrintJob job = renderMedicalLabel(data, options);
+    std::string zpl = job.asText();
+
+    ASSERT_EQ(job.format, "zpl");
+    ASSERT(zpl.find("^ACN,32,24^FDABC") != std::string::npos);
+    ASSERT(zpl.find("^ACN,30,22^FDBLOOD") != std::string::npos);
+    ASSERT(zpl.find("^ACN,26,18^FDCBC") != std::string::npos);
+}
+
+ADD_TEST(godex_g500u_uses_zpl_compatible_path) {
+    MedicalLabelData data;
+    data.sampleNo     = "22";
+    data.testItem     = "CBC";
+    data.barcodeValue = "008085125";
+    data.patientName  = "ABC";
+    data.specimenType = "BLOOD";
+    data.patientId    = "999";
+    data.timestamp    = "2026/1/1";
+
+    MedicalLabelPrintOptions options;
+    options.model = MedicalLabelPrinterModel::GodexG500u;
+
+    MedicalLabelPrinterModel resolved = MedicalLabelPrinterModel::Unknown;
+    PrintJob job = renderMedicalLabel(data, options, &resolved);
+    std::string zpl = job.asText();
+
+    ASSERT(resolved == MedicalLabelPrinterModel::GodexG500u);
+    ASSERT_EQ(job.format, "zpl");
+    ASSERT(zpl.find("^XA") != std::string::npos);
+    ASSERT(zpl.find("^XZ") != std::string::npos);
+    ASSERT(zpl.find("^BC") != std::string::npos);
+    ASSERT(zpl.find("008085125") != std::string::npos);
 }
 
 // ---------------------------------------------------------------------------

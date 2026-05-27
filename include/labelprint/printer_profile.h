@@ -71,6 +71,9 @@ namespace PrinterProfiles {
     // Zebra ZD888 (203 DPI, ZPL) — reference profile
     const PrinterProfile& zebra_zd888();
 
+    // Godex G500U (203 DPI, GZPL/ZPL-compatible) — profile from vendor brochure
+    const PrinterProfile& godex_g500u();
+
 } // namespace PrinterProfiles
 
 } // namespace labelprint

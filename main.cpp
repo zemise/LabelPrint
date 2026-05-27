@@ -28,6 +28,9 @@ const labelprint::PrinterProfile& selectProfile(const std::string& name) {
     if (name == "zebra_zd888") {
         return labelprint::PrinterProfiles::zebra_zd888();
     }
+    if (name == "godex_g500u") {
+        return labelprint::PrinterProfiles::godex_g500u();
+    }
     return labelprint::PrinterProfiles::xprinter_xp360b();
 }
 

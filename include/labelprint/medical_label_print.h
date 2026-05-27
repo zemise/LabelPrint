@@ -12,7 +12,8 @@ enum class MedicalLabelPrinterModel {
     Auto,
     Unknown,
     XprinterXp360b,
-    ZebraZd888
+    ZebraZd888,
+    GodexG500u
 };
 
 struct MedicalLabelPrintOptions {
