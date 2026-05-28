@@ -57,14 +57,15 @@ const PrinterProfile& PrinterProfiles::godex_g500u() {
     static const PrinterProfile p = [] {
         PrinterProfile p;
         p.name             = "Godex G500U";
-        p.language         = PrinterLanguage::ZPL; // GZPL-compatible command path
+        p.language         = PrinterLanguage::EZPL;
         p.dpi              = 203;
         p.maxWidth         = 864;   // 108 mm * 8 dots/mm
         p.maxHeight        = 13816; // 1727 mm * 8 dots/mm
         p.nativeBarcode    = true;
-        p.nativeChinese    = false; // Brochure lists Asian fonts, but no verified GZPL font name.
+        p.nativeChinese    = true;  // verified: EZPL Z1/Z2 + CP936
         p.bitmapGraphics   = true;
-        p.textStrategy     = TextStrategy::Auto;
+        p.textStrategy     = TextStrategy::Native;
+        p.nativeChineseCodepage = "936";
         p.gapMm            = 2;
         p.gapOffsetMm      = 0;
         p.darkness         = 25;

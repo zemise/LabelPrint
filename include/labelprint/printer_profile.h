@@ -9,7 +9,8 @@ namespace labelprint {
 // ---------------------------------------------------------------------------
 enum class PrinterLanguage {
     ZPL,
-    TSPL
+    TSPL,
+    EZPL
 };
 
 // ---------------------------------------------------------------------------
@@ -71,7 +72,7 @@ namespace PrinterProfiles {
     // Zebra ZD888 (203 DPI, ZPL) — reference profile
     const PrinterProfile& zebra_zd888();
 
-    // Godex G500U (203 DPI, GZPL/ZPL-compatible) — profile from vendor brochure
+    // Godex G500U (203 DPI, EZPL) — verified with Z1/Z2 + CP936 Chinese fonts
     const PrinterProfile& godex_g500u();
 
 } // namespace PrinterProfiles

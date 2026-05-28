@@ -539,6 +539,7 @@ transport.send(job, PrinterConnection{"Xprinter XP-360B #2"});
 - [x] `PrintJob` → `include/labelprint/backend.h`
 - [x] `ZplBackend` → `src/backends/zpl_backend.h` + `zpl_backend.cpp`
 - [x] `TsplBackend` → `src/backends/tspl_backend.h` + `tspl_backend.cpp`
+- [x] `EzplGb2312Backend` → `src/backends/ezpl_gb2312_backend.cpp` (Godex G500U, Z1/Z2 + CP936)
 - [x] 共享内部转换 → `src/backends/detail.h` (mapFont, convertSettings, populate)
 - [x] `main.cpp` 更新为通过后端渲染
 - [x] `CMakeLists.txt` 更新
@@ -596,10 +597,10 @@ transport.send(job, PrinterConnection{"Xprinter XP-360B #2"});
 
 - [x] `test/test_utils.h` — 共享测试宏 (`ADD_TEST`, `ASSERT`, `ASSERT_EQ`) + inline registry
 - [x] `test/test_main.cpp` — 测试运行器入口，遍历 registry 执行所有测试
-- [x] `test/test_document.cpp` — 10 项文档模型测试 (LabelDocument, LabelSettings, 元素, Profile)
-- [x] `test/test_backends.cpp` — 14 项后端测试 (ZPL/TSPL/TsplBitmapBackend 输出, PrintJob)
+- [x] `test/test_document.cpp` — 11 项文档模型测试 (LabelDocument, LabelSettings, 元素, Profile)
+- [x] `test/test_backends.cpp` — 24 项后端测试 (ZPL/TSPL/EZPL/TsplBitmapBackend 输出, PrintJob)
 - [x] `CMakeLists.txt` — `test_runner` 构建目标，链接 gdiplus.lib
-- [x] 全部 24 项测试通过
+- [x] 全部 35 项测试通过
 
 目标：
 

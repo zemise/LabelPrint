@@ -1,4 +1,4 @@
-# LabelPrint · v1.2.8
+# LabelPrint · v1.2.9
 
 ![CI](https://github.com/zemise/labelprint/actions/workflows/ci.yml/badge.svg)
 
@@ -11,13 +11,13 @@ C++ label printing library — printer-independent document model with ZPL/TSPL 
 - Chinese fields print through native XP-360B `GB18030` + `TSS24.BF2` TSPL, with bitmap rendering retained as fallback.
 - The confirmed working printer in this workspace is `Xprinter XP-360B #2`.
 - The connected `Zebra ZD888` path has been verified with native `ZPL` output, RAW WinSpool sending, and native Chinese text via `E:CSONG.TTF`.
-- `Godex G500U` is supported through the vendor-documented `GZPL`/ZPL-compatible path, using a 203 DPI profile from the G500U brochure.
+- `Godex G500U` is supported through the verified `EZPL` + `Z1/Z2` + `CP936` native Chinese path.
 - **Phase 1 & 2 complete:** Document model + printer profiles.
 - **Phase 3 complete:** Backend interface (`IPrinterBackend` + `ZplBackend` + `TsplBackend`).
 - **Phase 4 complete:** `TsplBitmapBackend` with GDI+ Chinese text rendering, plus XP-360B native GB18030 TSPL output.
 - **Phase 5 complete:** Template API (`MedicalLabelData` + `buildMedicalLabel`).
 - **Phase 6 complete:** Transport layer (`FileTransport`, `WindowsRawTransport`, `Tcp9100Transport`).
-- **Phase 7 complete:** Test infrastructure (`test_runner.exe`), 34 tests covering document model + backend output.
+- **Phase 7 complete:** Test infrastructure (`test_runner.exe`), 35 tests covering document model + backend output.
 - **Phase 8 complete:** High-level medical label print API (`printMedicalLabel`) that resolves printer model and backend internally.
 
 ## Project structure
@@ -31,6 +31,7 @@ include/labelprint/
   backend.h             — IPrinterBackend + PrintJob (Phase 3)
   zpl_backend.h         — ZplBackend (Phase 3)
   tspl_backend.h        — TsplBackend (Phase 3)
+  ezpl_gb2312_backend.h — EzplGb2312Backend (Godex native Chinese)
   tspl_gb18030_backend.h — TsplGb18030Backend (XP-360B native Chinese)
   tspl_bitmap_backend.h — TsplBitmapBackend (Phase 4)
   transport.h           — IPrintTransport + all transports (Phase 6)
@@ -49,6 +50,7 @@ src/backends/
   detail.h              — Shared font/settings conversion + populateTsplBitmap
   zpl_backend.cpp       — ZplBackend implementation
   tspl_backend.cpp      — TsplBackend implementation
+  ezpl_gb2312_backend.cpp — EzplGb2312Backend implementation
   tspl_gb18030_backend.cpp — TsplGb18030Backend implementation
   tspl_bitmap_backend.cpp — TsplBitmapBackend implementation
 test/
@@ -58,7 +60,7 @@ test/
   test_utils.h          — Shared test macros (ADD_TEST, ASSERT, ASSERT_EQ)
   test_main.cpp         — Test runner entry point
   test_document.cpp     — Document model & profile tests (11 tests)
-  test_backends.cpp     — Backend output & PrintJob tests (23 tests)
+  test_backends.cpp     — Backend output & PrintJob tests (24 tests)
 zpl_label.h/cpp         — ZPL/TSPL command builder (internal engine)
 main.cpp                — Sample using LabelDocument + PrinterProfile + Backends
 CMakeLists.txt          — CMake build config
@@ -126,7 +128,7 @@ target_link_libraries(your_app PRIVATE LabelPrint::labelprint)
 Configure:
 
 ```powershell
-cmake -S . -B build -DCMAKE_PREFIX_PATH=C:\path\to\labelprint-v1.2.8-windows-x64-vs2026
+cmake -S . -B build -DCMAKE_PREFIX_PATH=C:\path\to\labelprint-v1.2.9-windows-x64-vs2026
 cmake --build build --config Release
 ```
 
@@ -167,7 +169,7 @@ int main() {
 }
 ```
 
-`printMedicalLabel()` detects the Windows printer driver/name metadata and chooses the built-in XP-360B native GB18030 TSPL path, Zebra ZD888 ZPL path, or Godex G500U GZPL/ZPL-compatible path. If detection is inconclusive, it falls back to `options.fallbackModel`, which defaults to XP-360B for backward compatibility.
+`printMedicalLabel()` detects the Windows printer driver/name metadata and chooses the built-in XP-360B native GB18030 TSPL path, Zebra ZD888 ZPL path, or Godex G500U EZPL/CP936 path. If detection is inconclusive, it falls back to `options.fallbackModel`, which defaults to XP-360B for backward compatibility.
 On Windows, a `std::wstring` overload is also available so applications can pass non-ANSI printer names without converting them through the local code page.
 
 For printer- or template-specific layouts, pass `MedicalLabelLayout` instead of raw `LabelSettings`:
@@ -186,7 +188,7 @@ layout.patientName = {{5, 175}, 28, 22, Font::Medium};
 LabelDocument doc = buildMedicalLabel(data, layout);
 ```
 
-The built-in XP-360B auto-print layout uses a wider barcode (`narrowWidth = 3`, `wideRatio = 2.6`), shifts the barcode area slightly left, centers the human-readable barcode value, and uses compact lower-row text for patient/specimen/department fields. Zebra ZD888 has a separate enlarged-text layout unless a custom layout is supplied. Godex G500U currently uses the standard medical layout through the ZPL-compatible backend; its brochure lists Asian fonts, but the exact GZPL Chinese font mapping still needs device validation.
+The built-in XP-360B auto-print layout uses a wider barcode (`narrowWidth = 3`, `wideRatio = 2.6`), shifts the barcode area slightly left, centers the human-readable barcode value, and uses compact lower-row text for patient/specimen/department fields. Zebra ZD888 has a separate enlarged-text layout unless a custom layout is supplied. Godex G500U has a separate EZPL/CP936 layout: widened Code128 barcode (`narrow = 3`, `wide = 7`), sample number/name/patient ID shifted right, and native `Z1/Z2` Chinese fonts with normal rotation.
 
 Stable public API:
 
@@ -195,6 +197,7 @@ Stable public API:
 - `buildMedicalLabel`
 - `MedicalLabelPrintOptions`
 - `printMedicalLabel`
+- `EzplGb2312Backend`
 - `TsplGb18030Backend`
 - `TsplBitmapBackend`
 - `WindowsRawTransport`
@@ -278,13 +281,14 @@ powershell -ExecutionPolicy Bypass -File .\RawTSPL.ps1 -PrinterName "Xprinter XP
 | `zpl_label.h` / `zpl_label.cpp` | ZPL/TSPL command builder (internal engine) |
 | `include/labelprint/zpl_backend.h` / `src/backends/zpl_backend.cpp` | ZplBackend — renders LabelDocument to ZPL |
 | `include/labelprint/tspl_backend.h` / `src/backends/tspl_backend.cpp` | TsplBackend — renders LabelDocument to TSPL |
+| `include/labelprint/ezpl_gb2312_backend.h` / `src/backends/ezpl_gb2312_backend.cpp` | EzplGb2312Backend — Godex native Chinese via `Z1/Z2` + CP936 |
 | `include/labelprint/tspl_gb18030_backend.h` / `src/backends/tspl_gb18030_backend.cpp` | TsplGb18030Backend — XP-360B native Chinese via `CODEPAGE 54936` + `TSS24.BF2` |
 | `include/labelprint/tspl_bitmap_backend.h` / `src/backends/tspl_bitmap_backend.cpp` | TsplBitmapBackend — CJK→BITMAP (Phase 4) |
 | `src/backends/detail.h` | Shared font/settings conversion helpers |
 | `main.cpp` | C++ sample using backends API |
 | `GenerateLabelTsplCn.ps1` | Chinese bitmap TSPL generator (superseded, kept as reference) |
 | `test/test_utils.h` | Shared test macros and registry |
-| `test/test_main.cpp` | Test runner (34 tests, run with `test_runner.exe`) |
+| `test/test_main.cpp` | Test runner (35 tests, run with `test_runner.exe`) |
 | `RawTSPL.ps1` | RAW print sender via WinSpool |
 | `RawZPL.ps1` | RAW ZPL sender (reference) |
 | `preview_render.py` | Local PIL-based label preview |
@@ -304,7 +308,7 @@ See [ARCHITECTURE.md](ARCHITECTURE.md) for the full 7-phase plan.
 ## Running tests
 
 ```bash
-# Build and run C++ unit tests (34 tests)
+# Build and run C++ unit tests (35 tests)
 cmake --build out/build/x64-Debug --target test_runner
 ./out/build/x64-Debug/test_runner.exe
 ```

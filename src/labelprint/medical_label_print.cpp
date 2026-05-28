@@ -2,6 +2,7 @@
 
 #include "labelprint/printer_profile.h"
 #include "labelprint/transport.h"
+#include "labelprint/ezpl_gb2312_backend.h"
 #include "labelprint/tspl_bitmap_backend.h"
 #include "labelprint/tspl_gb18030_backend.h"
 #include "labelprint/zpl_backend.h"
@@ -246,6 +247,29 @@ MedicalLabelLayout effectiveLayout(const MedicalLabelPrintOptions& options,
         layout.patientId.width = 16;
         layout.timestamp.height = 20;
         layout.timestamp.width = 12;
+    } else if (!options.useCustomLayout && model == MedicalLabelPrinterModel::GodexG500u) {
+        layout.sampleNo.pos.x = 13; // + homeX 5 => x=18
+        layout.sampleNo.height = 28;
+        layout.sampleNo.width = 16;
+        layout.testItem.height = 22;
+        layout.testItem.width = 16;
+        layout.barcode.pos.x = 57; // + homeX 5 => x=62
+        layout.barcode.narrowWidth = 3;
+        layout.barcode.wideRatio = 2.5; // EZPL BQ wide=7
+        layout.barcodeText.height = 18;
+        layout.barcodeText.width = 13;
+        layout.patientName.pos.x = 13; // + homeX 5 => x=18
+        layout.patientName.height = 24;
+        layout.patientName.width = 22;
+        layout.specimenType.height = 24;
+        layout.specimenType.width = 20;
+        layout.department.height = 24;
+        layout.department.width = 19;
+        layout.patientId.pos.x = 13; // + homeX 5 => x=18
+        layout.patientId.height = 20;
+        layout.patientId.width = 14;
+        layout.timestamp.height = 18;
+        layout.timestamp.width = 11;
     }
     layout.settings.darkness = profile.darkness;
     layout.settings.printSpeed = profile.speed;
@@ -258,8 +282,11 @@ MedicalLabelLayout effectiveLayout(const MedicalLabelPrintOptions& options,
 PrintJob renderWithModel(const LabelDocument& doc,
                          const PrinterProfile& profile,
                          MedicalLabelPrinterModel model) {
-    if (model == MedicalLabelPrinterModel::ZebraZd888 ||
-        model == MedicalLabelPrinterModel::GodexG500u) {
+    if (model == MedicalLabelPrinterModel::GodexG500u) {
+        EzplGb2312Backend backend;
+        return backend.render(doc, profile);
+    }
+    if (model == MedicalLabelPrinterModel::ZebraZd888) {
         ZplBackend backend;
         return backend.render(doc, profile);
     }

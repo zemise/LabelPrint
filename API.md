@@ -1,4 +1,4 @@
-# API Reference · v1.2.8
+# API Reference · v1.2.9
 
 ## Architecture
 
@@ -107,7 +107,7 @@ MedicalLabelPrintResult result =
     printMedicalLabel("Xprinter XP-360B #2", data, options);
 ```
 
-`MedicalLabelPrinterModel::Auto` reads Windows printer metadata such as driver, port, processor, comment, and display name. It automatically selects `Xprinter XP-360B` with `TsplGb18030Backend`, `Zebra ZD888` with `ZplBackend`, or `Godex G500U` with the GZPL/ZPL-compatible `ZplBackend` path when possible. If the printer cannot be identified, `fallbackModel` is used and defaults to `XprinterXp360b`.
+`MedicalLabelPrinterModel::Auto` reads Windows printer metadata such as driver, port, processor, comment, and display name. It automatically selects `Xprinter XP-360B` with `TsplGb18030Backend`, `Zebra ZD888` with `ZplBackend`, or `Godex G500U` with `EzplGb2312Backend` when possible. If the printer cannot be identified, `fallbackModel` is used and defaults to `XprinterXp360b`.
 
 Windows applications can call the `std::wstring` overload when the printer name may contain Chinese or other non-ANSI characters:
 
@@ -368,7 +368,7 @@ Describes a printer model's capabilities and defaults.
 ```cpp
 struct PrinterProfile {
     std::string name;
-    PrinterLanguage language;     // ZPL or TSPL
+    PrinterLanguage language;     // ZPL, TSPL, or EZPL
     int dpi;                      // dots per inch
 
     int maxWidth, maxHeight;      // printable area (dots)
@@ -398,7 +398,7 @@ struct PrinterProfile {
 ```cpp
 const PrinterProfile& PrinterProfiles::xprinter_xp360b();  // 203 DPI TSPL
 const PrinterProfile& PrinterProfiles::zebra_zd888();      // 203 DPI ZPL
-const PrinterProfile& PrinterProfiles::godex_g500u();       // 203 DPI GZPL/ZPL-compatible
+const PrinterProfile& PrinterProfiles::godex_g500u();       // 203 DPI EZPL, Z1/Z2 + CP936
 ```
 
 Always use these factories. They return `const&` to a static instance — safe to hold by reference.
@@ -441,6 +441,7 @@ public:
 |---|---|---|---|
 | `ZplBackend` | `labelprint/zpl_backend.h` | `"zpl"` | No (CI28 + built-in font) |
 | `TsplBackend` | `labelprint/tspl_backend.h` | `"tspl"` | ASCII only |
+| `EzplGb2312Backend` | `labelprint/ezpl_gb2312_backend.h` | `"ezpl-gb2312"` | Yes (`Z1/Z2` + CP936) |
 | `TsplGb18030Backend` | `labelprint/tspl_gb18030_backend.h` | `"tspl-gb18030"` | Yes (`CODEPAGE 54936` + `TSS24.BF2`) |
 | `TsplBitmapBackend` | `labelprint/tspl_bitmap_backend.h` | `"tspl-bitmap"` | Yes (CJK → BITMAP) |
 
@@ -448,7 +449,7 @@ public:
 
 ```
 ASCII text     → TsplBackend (fast, clean output)
-Chinese text   -> TsplGb18030Backend for XP-360B, native ZPL font for verified ZD888 profiles
+Chinese text   -> TsplGb18030Backend for XP-360B, EzplGb2312Backend for Godex G500U, native ZPL font for verified ZD888 profiles
 Fallback CJK   -> TsplBitmapBackend when native TSPL Chinese fonts are unavailable
 Zebra printer  → ZplBackend (ZPL output)
 ```
@@ -612,7 +613,7 @@ LabelDocument doc = buildMedicalLabel(data, layout);
 ```
 
 The default `MedicalLabelLayout` targets 50×30 mm labels at 203 DPI (400×240 dots).
-The built-in XP-360B auto-print path widens the barcode to `narrowWidth = 3`, `wideRatio = 2.6`, shifts the barcode area slightly left, centers `barcodeText`, and uses compact lower-row text. Zebra ZD888 has a separate enlarged-text layout unless you pass a custom layout. Godex G500U uses the standard medical layout through the ZPL-compatible backend; Chinese font mapping for GZPL still needs device validation.
+The built-in XP-360B auto-print path widens the barcode to `narrowWidth = 3`, `wideRatio = 2.6`, shifts the barcode area slightly left, centers `barcodeText`, and uses compact lower-row text. Zebra ZD888 has a separate enlarged-text layout unless you pass a custom layout. Godex G500U has a separate EZPL/CP936 layout with widened Code128 barcode, sample number/name/patient ID shifted right, and native `Z1/Z2` Chinese fonts with normal rotation.
 
 ### Stable API surface
 
@@ -623,6 +624,7 @@ These names are kept stable for consumers:
 - `buildMedicalLabel`
 - `MedicalLabelPrintOptions`
 - `printMedicalLabel`
+- `EzplGb2312Backend`
 - `TsplGb18030Backend`
 - `TsplBitmapBackend`
 - `WindowsRawTransport`
@@ -705,10 +707,10 @@ WindowsRawTransport().send(job, PrinterConnection{"Xprinter XP-360B #2"});
 LABELPRINT_VERSION_MAJOR   // 1
 LABELPRINT_VERSION_MINOR   // 2
 LABELPRINT_VERSION_PATCH   // 7
-LABELPRINT_VERSION_STRING  // "1.2.8"
+LABELPRINT_VERSION_STRING  // "1.2.9"
 ```
 
-The version also appears in CMake: `project(LabelPrint VERSION 1.2.8)`.
+The version also appears in CMake: `project(LabelPrint VERSION 1.2.9)`.
 
 ---
 

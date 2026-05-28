@@ -1,8 +1,9 @@
-// Backend output tests — verify ZPL and TSPL contain expected commands
+// Backend output tests — verify ZPL, TSPL, and EZPL contain expected commands
 #include "test_utils.h"
 #include "labelprint/document.h"
 #include "labelprint/printer_profile.h"
 #include "labelprint/backend.h"
+#include "labelprint/ezpl_gb2312_backend.h"
 #include "labelprint/medical_label_print.h"
 #include "labelprint/template.h"
 #include "labelprint/transport.h"
@@ -385,7 +386,7 @@ ADD_TEST(zebra_default_print_layout_uses_larger_text) {
     ASSERT(zpl.find("^ACN,26,18^FDCBC") != std::string::npos);
 }
 
-ADD_TEST(godex_g500u_uses_zpl_compatible_path) {
+ADD_TEST(godex_g500u_uses_ezpl_gb2312_path) {
     MedicalLabelData data;
     data.sampleNo     = "22";
     data.testItem     = "CBC";
@@ -403,11 +404,34 @@ ADD_TEST(godex_g500u_uses_zpl_compatible_path) {
     std::string zpl = job.asText();
 
     ASSERT(resolved == MedicalLabelPrinterModel::GodexG500u);
-    ASSERT_EQ(job.format, "zpl");
-    ASSERT(zpl.find("^XA") != std::string::npos);
-    ASSERT(zpl.find("^XZ") != std::string::npos);
-    ASSERT(zpl.find("^BC") != std::string::npos);
+    ASSERT_EQ(job.format, "ezpl-gb2312");
+    ASSERT(zpl.find("~S,ESG") != std::string::npos);
+    ASSERT(zpl.find("^L") != std::string::npos);
+    ASSERT(zpl.find("BQ,62,77,3,7,75,0,0,008085125") != std::string::npos);
+    ASSERT(zpl.find("AC,18,10,1,2,0,0,22") != std::string::npos);
+    ASSERT(zpl.find("AZ1,147,157,1,1,0,0,008085125") != std::string::npos);
     ASSERT(zpl.find("008085125") != std::string::npos);
+}
+
+ADD_TEST(ezpl_gb2312_backend_encodes_chinese_text) {
+    LabelSettings settings = testSettings();
+    LabelDocument doc(settings);
+    doc.addText(5, 5, u8"中文测试", 24, 24, Font::Medium);
+
+    const auto& profile = PrinterProfiles::godex_g500u();
+    EzplGb2312Backend backend;
+    PrintJob job = backend.render(doc, profile);
+
+    const std::vector<uint8_t> gb2312ChineseTest = {
+        0xD6, 0xD0, 0xCE, 0xC4, 0xB2, 0xE2, 0xCA, 0xD4
+    };
+    const auto found = std::search(job.data.begin(), job.data.end(),
+                                   gb2312ChineseTest.begin(),
+                                   gb2312ChineseTest.end());
+
+    ASSERT_EQ(job.format, "ezpl-gb2312");
+    ASSERT(job.debugText.find("AZ2,10,10,1,1,0,0") != std::string::npos);
+    ASSERT(found != job.data.end());
 }
 
 // ---------------------------------------------------------------------------

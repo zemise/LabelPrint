@@ -46,6 +46,18 @@ labelprint::LabelSettings buildSettings(const labelprint::PrinterProfile& profil
     return cfg;
 }
 
+const char* languageName(labelprint::PrinterLanguage language) {
+    switch (language) {
+    case labelprint::PrinterLanguage::ZPL:
+        return "ZPL";
+    case labelprint::PrinterLanguage::TSPL:
+        return "TSPL";
+    case labelprint::PrinterLanguage::EZPL:
+        return "EZPL";
+    }
+    return "unknown";
+}
+
 labelprint::MedicalLabelData buildAsciiData() {
     labelprint::MedicalLabelData data;
     data.sampleNo     = "22";
@@ -84,7 +96,7 @@ int main(int argc, char* argv[]) {
 
     std::cout << "// Printer profile: " << profile.name
               << " (" << profile.dpi << " DPI, "
-              << (profile.language == PrinterLanguage::TSPL ? "TSPL" : "ZPL") << ")"
+              << languageName(profile.language) << ")"
               << std::endl;
 
     FileTransport fileTransport;
@@ -97,6 +109,16 @@ int main(int argc, char* argv[]) {
         std::cout << zplJob.asText() << std::endl;
         fileTransport.send(zplJob, PrinterConnection{"label_medical.zpl"});
         std::cout << "\n// ZPL saved to label_medical.zpl" << std::endl;
+        return 0;
+    }
+
+    if (profile.language == PrinterLanguage::EZPL) {
+        EzplGb2312Backend ezplBackend;
+        LabelDocument ezplDoc = asciiOnly ? asciiDoc : buildMedicalLabel(buildCnData(), cfg);
+        PrintJob ezplJob = ezplBackend.render(ezplDoc, profile);
+        std::cout << ezplJob.debugText << std::endl;
+        fileTransport.send(ezplJob, PrinterConnection{"label_medical.ezpl"});
+        std::cout << "\n// EZPL saved to label_medical.ezpl" << std::endl;
         return 0;
     }
 

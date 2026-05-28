@@ -105,10 +105,12 @@ ADD_TEST(printer_profile_zd888) {
 ADD_TEST(printer_profile_godex_g500u) {
     const auto& p = PrinterProfiles::godex_g500u();
     ASSERT_EQ(p.dpi, 203);
-    ASSERT(p.language == PrinterLanguage::ZPL);
+    ASSERT(p.language == PrinterLanguage::EZPL);
     ASSERT_EQ(p.maxWidth, 864);
     ASSERT_EQ(p.maxHeight, 13816);
     ASSERT_EQ(p.nativeBarcode, true);
-    ASSERT_EQ(p.nativeChinese, false);
+    ASSERT_EQ(p.nativeChinese, true);
+    ASSERT_EQ(p.nativeChineseFont, "");
+    ASSERT_EQ(p.nativeChineseCodepage, "936");
     ASSERT_EQ(p.speed, 5);
 }
